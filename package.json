@@ -1,0 +1,1 @@
+{"name":"bracu-transport-auth","private":true,"workspaces":["services","Client"],"scripts":{"dev:server":"npm run dev -w services","dev:client":"npm run dev -w Client","migrate":"npm run migrate -w services","test":"npm test -w services && npm test -w Client","build":"npm run build -w Client"}}
