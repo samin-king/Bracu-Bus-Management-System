@@ -1,0 +1,28 @@
+.member2 { color: #152d43; max-width: 1100px; margin: auto; padding: 24px; }
+.member2 header, .member2 nav { display:flex; gap:20px; align-items:center; flex-wrap:wrap; padding:16px 0; border-bottom:1px solid #cbd5e1; }
+.member2 header { justify-content:space-between; font-weight:700; }
+.member2 main { padding:24px 0; }
+.member2 h1 { font-size:1.8rem; font-weight:700; margin-bottom:16px; }
+.member2 h2 { font-size:1.25rem; font-weight:600; margin:24px 0 12px; }
+.member2 a { color:#174c94; text-decoration:underline; }
+.member2 nav .active { font-weight:bold; }
+.member2 button, .m2-cards > a { border:1px solid #7793a6; padding:10px 16px; border-radius:8px; background:white; cursor:pointer; }
+.member2 button:disabled { opacity:.55; cursor:not-allowed; }
+.member2 button[aria-pressed=true] { outline:3px solid #17633e; }
+.member2 label { display:block; margin:16px 0; }
+.member2 input, .member2 select, .member2 textarea { display:block; padding:10px; border:1px solid #7793a6; border-radius:6px; width:100%; max-width:600px; background:white; }
+.member2 textarea { min-height:130px; }
+.member2 article, .member2 section[aria-label], .member2 [role=dialog] { background:white; border:1px solid #cbd5e1; border-radius:12px; padding:20px; margin:16px 0; }
+.m2-cards { display:flex; flex-wrap:wrap; gap:12px; margin:20px 0; }
+.member2 small { display:block; font-size:.75rem; }
+.m2-seats { display:grid; grid-template-columns:repeat(4,minmax(55px,1fr)); gap:12px; max-width:480px; margin:20px 0; }
+.member2 .available { background:#e6f5ed; }
+.member2 .reserved { background:#fff0ce; }
+.member2 .booked { background:#d6dde4; }
+.member2 .selected { background:#17633e; color:white; }
+.member2 dl { display:grid; grid-template-columns:120px 1fr; gap:6px 16px; margin:16px 0; }
+.member2 dt { font-weight:600; }
+.member2 dd { overflow-wrap:anywhere; }
+.m2-error { color:#a01f27; padding:12px; background:#fff0f0; }
+.m2-description { white-space:pre-wrap; overflow-wrap:anywhere; }
+.member2 button:focus-visible, .member2 a:focus-visible { outline:3px solid #17633e; outline-offset:3px; }

@@ -4,7 +4,11 @@ import connectPgSimple from 'connect-pg-simple';
 import helmet from 'helmet';
 import { createAuthService, createGoogleProvider, AuthError } from './services/authService.js';
 import { authRoutes } from './routes/authRoutes.js';
-export function createApp({ config, pool, provider = createGoogleProvider(config), store }) {
+import { member2Routes } from './routes/member2Routes.js';
+import { createMember2Service } from './services/member2Service.js';
+import { createTripCatalog } from './services/tripCatalog.js';
+import { Member2Error } from './services/bookingRules.js';
+export function createApp({ config, pool, provider = createGoogleProvider(config), store, tripCatalog = createTripCatalog(), clock }) {
   const app = express();
   app.disable('x-powered-by');
   if (config.trustProxy) app.set('trust proxy', 1);
@@ -16,10 +20,14 @@ export function createApp({ config, pool, provider = createGoogleProvider(config
     resave: false, saveUninitialized: false, rolling: false,
     cookie: { httpOnly: true, secure: config.secure, sameSite: 'lax', maxAge: config.ttlMs, path: '/' } }));
   app.use('/api/auth', authRoutes(createAuthService({ config, pool, provider }), config));
+  app.use('/api/student', member2Routes(createMember2Service({ pool, tripCatalog, clock }), createAuthService({ config, pool, provider }), config));
   app.use((req, res) => res.status(404).json({ error: 'not_found' }));
   app.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
     if (error instanceof AuthError) return res.status(error.status).json({ error: error.code });
+    if (error instanceof Member2Error) return res.status(error.status).json({ error: error.code });
+    if (error.type === 'entity.parse.failed') return res.status(400).json({ error: 'invalid_json' });
+    if (error.type === 'entity.too.large') return res.status(413).json({ error: 'request_too_large' });
     console.error('Authentication request failed', { type: error.constructor.name, code: error.code });
     res.status(500).json({ error: 'server_error', message: 'Authentication is temporarily unavailable. Please try again.' });
   });
