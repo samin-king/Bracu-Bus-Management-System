@@ -9,6 +9,7 @@
   "scripts": {
     "test": "npm test --workspace services && npm test --workspace server",
     "build": "npm run build --workspace transport-client",
+    "build:vercel": "node scripts/build-vercel.mjs",
     "migrate": "npm run migrate --workspace services",
     "seed": "npm run seed --workspace server",
     "dev": "npm run dev --workspace services",

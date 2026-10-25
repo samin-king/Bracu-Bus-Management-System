@@ -1,6 +1,10 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { authApi } from '../services/authApi.js';
 afterEach(() => vi.unstubAllGlobals());
+it('missing SMTP is reported clearly without changing same-origin credentials',async()=>{
+  vi.stubGlobal('fetch',vi.fn().mockResolvedValue({status:503,ok:false,json:async()=>({error:'email_not_configured'})}));
+  await expect(authApi.verifyEmail('test-token')).rejects.toThrow('Email sign-in is not configured');
+});
 it('me sends cookie credentials and treats 401 as anonymous', async () => {
   const fetch = vi.fn().mockResolvedValue({ status: 401 });
   vi.stubGlobal('fetch', fetch);

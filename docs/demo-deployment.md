@@ -1,126 +1,122 @@
-# Temporary integrated backend deployment
+# One Vercel deployment: frontend and integrated API
 
-Use Render's Node web service and a dedicated Neon database. Keep the Render Root
-Directory at the repository root: `services` imports the integrated `server`
-application and the migration runner reads `database`.
+Connect `samin-king/Bracu-Bus-Management-System`, branch `main`, to one Vercel
+project. Set **Root Directory to the repository root** (leave the field empty).
+Do not use `Client` or `services`. Root `vercel.json` configures the deployment:
 
-Connect repository `samin-king/Bracu-Bus-Management-System`, branch `main`.
-The Blueprint pins `main`; leave Render's Root Directory blank (repository root).
+| Setting | Value |
+| --- | --- |
+| Framework preset | Other |
+| Install Command | `npm ci` |
+| Build Command | `npm run build:vercel` |
+| Output Directory | `Client/dist` |
+| Node.js | 22.x or a newer supported LTS |
 
-The root `render.yaml` declares the configuration. It does not deploy anything by
-itself. Automatic deploys are disabled. Do not commit/push to trigger deployment
-until authorized. Render's Git deployment cannot include uncommitted local files;
-an account-authorized alternative is a container image built from this workspace.
+Remove conflicting previous dashboard overrides. Enable Vercel system environment
+variables (the default). There is no separate backend host, proxy placeholder,
+database-provider-specific dependency or Redis requirement. Frontend requests stay
+same-origin `/api/...`.
 
-## Required access and values
+## Minimum environment
 
-- Render deployment access and a source/image deployment method.
-- A dedicated Neon database and its direct TLS connection string. Preserve Neon's
-  supplied TLS parameters; do not disable certificate verification. Do not use the
-  existing local database as the hosted database.
-- SMTP credentials, a verified sender, and permission to send to the demo inboxes.
-  Render Free blocks outbound ports 25, 465 and 587. The supplied configuration
-  requires a provider supporting STARTTLS on port 2525. If unavailable, choose an
-  SMTP-capable hosting plan instead; do not replace email verification with a bypass.
-- Three distinct real `@g.bracu.ac.bd` inboxes in `DEMO_STUDENT_EMAIL`,
-  `DEMO_DRIVER_EMAIL`, and `DEMO_AUTHORITY_EMAIL`. The operator explicitly provisions
-  these roles; login cannot grant itself a role. Existing incompatible roles/driver
-  links cause provisioning to fail rather than being overwritten.
-- Vercel project deployment access to publish the rewrite after the API URL exists.
+Enter real secrets only in Vercel Environment settings, never Git or frontend code:
 
-Use `.env.production.example` as the environment reference. Store actual secrets in
-hosting secret settings, never in this repository. Render generates SESSION_SECRET
-and supplies PORT. Leave GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET unset; the HTTPS
-GOOGLE_CALLBACK_URL satisfies legacy config validation without enabling OAuth.
+- `DATABASE_URL`: actual hosted PostgreSQL connection string, accessible from
+  Vercel, including provider-required TLS options. A private/internal provider URL
+  is not reachable from Vercel. Use a public endpoint, with a provider pooler if
+  available and compatible with PostgreSQL transactions and transaction-scoped
+  advisory locks. No particular database provider is required.
+- `SESSION_SECRET`: stable random value of at least 32 characters. Generate it
+  securely using a password manager or Node crypto; keep it stable across instances
+  and redeploys to preserve valid sessions.
 
-## Startup and demo data
+Vercel supplies NODE_ENV=production and its system variables. The API derives its
+HTTPS origin from VERCEL_PROJECT_PRODUCTION_URL or VERCEL_URL; previews use their
+own VERCEL_URL. Optional FRONTEND_URL overrides it for a canonical/custom domain.
+Use the exact browser origin. Do not reuse a production override in previews.
+Origin checks remain strict; client Host headers are not used for email links.
 
-Build: `npm ci --omit=dev --workspace services --workspace server`.
+Keep DEV_DIRECT_LOGIN=false, DEV_EMAIL_LOGIN=false and ENABLE_DEV_DRIVER_AUTH=false.
+The function rejects enabled bypass flags. Secure cookies and proxy trust are
+automatic on Vercel; explicit SESSION_COOKIE_SECURE=true and TRUST_PROXY=true are
+supported. Session lifetime defaults to eight hours. See .env.production.example.
 
-Start: `npm run migrate && node services/scripts/seed-demo.js && npm run start --workspace services`.
+## Email login and accounts
 
-The migration command applies all existing migrations transactionally, with an
-advisory lock. The explicit demo seed is transactional and repeatable. It adds two
-buses (28/37 seats, four standing places each), one route, an active driver, linked
-accounts, and trips at the four supported times today through five days ahead.
-It also adds clearly labeled sample complaint, feedback and notification records.
-It does not create sessions, login tokens or confirmed bookings. Student gender is
-initially unverified and is set through the existing Profile screen. Repeated runs
-preserve profile edits and existing account roles. Booking must be demonstrated in
-an actual server-side booking window; there is no clock or booking bypass.
+The API starts without SMTP or Google credentials. Missing email delivery returns
+JSON 503 email_not_configured, displayed clearly by the login page. Missing Google
+credentials return oauth_not_configured. GOOGLE_CALLBACK_URL is required only
+when both Google credentials enable the optional OAuth endpoints.
 
-No Redis worker is needed for the existing synchronous complaint/feedback/notification
-APIs. The web process is the integrated `services/src/server.js`, not a standalone
-transport application.
+**Real public email login still needs delivery:** set SMTP_HOST, EMAIL_FROM, the
+provider's port/TLS mode and usually both SMTP_USER and SMTP_PASSWORD. Port 587
+normally uses SMTP_SECURE=false for required STARTTLS; implicit TLS uses
+SMTP_SECURE=true. Vercel does not create an SMTP account or inbox. A login bypass
+cannot safely replace missing delivery.
 
-## Vercel routing
+Existing registered-account policy is preserved: unknown valid emails receive a
+generic acknowledgment without an email or session. Import/register legitimate
+users through trusted administration. Drivers need an active linked drivers row;
+roles never come from browser input. A fresh database needs real accounts and
+fleet/trip data before a full demonstration.
 
-`Client/vercel.json` contains the API rewrite followed by a frontend-only SPA
-fallback. Configure the Vercel project's Root Directory as `Client`, using the
-Vite build (`npm run build`) and output directory `dist`. Verify this setting in
-the existing Vercel project: it cannot be determined from repository files.
-If that project instead builds from the repository root, move this configuration
-to root `vercel.json` and use root build `npm run build` with output `Client/dist`;
-do not keep competing copies of the configuration.
+Demo seeding is **not part of deployment/startup**. The optional
+services/scripts/seed-demo.js remains available for explicit operator use with
+three approved distinct inboxes in DEMO_STUDENT_EMAIL, DEMO_DRIVER_EMAIL and
+DEMO_AUTHORITY_EMAIL. These are not required to deploy or run the normal API.
+Its preflight validates BRACU name formats, optional BRACU_STUDENT_EMAIL_PATTERN
+and duplicate inboxes, and reports variable names without values. No fake default
+accounts, login tokens, sessions or development bypasses are created.
 
-Before deploying, replace **only** `replace-with-render-backend-host.invalid` in
-`Client/vercel.json`, first rewrite's `destination`, with the actual Render
-hostname (for example, the hostname supplied by Render, without a scheme or path).
-The reserved `.invalid` hostname is an explicit nonfunctional placeholder, not a
-real backend URL. Leave `https://` and `/api/:path*` intact.
+## Migrations
 
-```json
-{
-  "rewrites": [
-    {"source": "/api/:path*", "destination": "https://replace-with-render-backend-host.invalid/api/:path*"},
-    {"source": "/((?!api(?:/|$)).*)", "destination": "/index.html"}
-  ]
-}
-```
+On Vercel production/preview builds, `npm run build:vercel` runs the existing
+migration script before the Vite build. DATABASE_URL is required at build time
+and runtime. Migration failure stops publication. No demo seed runs. No migration
+runs on API requests or cold starts. The transaction, migration ledger and advisory
+lock serialize concurrent builds and avoid reapplying existing migrations.
 
-The API rewrite matches `/api` and `/api/...`. The fallback explicitly excludes
-both, so failed API requests cannot turn into successful index.html responses.
-The fallback serves frontend deep links such as `/login`, `/profile` and `/driver`.
-This configuration is not ready for a working public demo until the real host is known.
-Do not introduce frontend API environment variables. FRONTEND_URL must remain
-`https://bracu-bus-management-system.vercel.app` so the existing mutation-origin
-check accepts the browser's Origin. No browser CORS change is needed for this
-same-origin proxy. Verify that the rewrite preserves Origin and Set-Cookie, and
-that the trusted hosting proxy forwards HTTPS correctly for secure cookies.
+Use a separate Preview database or disable previews until one is configured.
+Never attach arbitrary pull-request builds to the production database. Schema
+changes happen before promotion; future migrations must be compatible with the
+currently running application. Preserve schema_migrations when importing a database.
+Back up existing data before schema changes.
 
-## Lockfile casing review
+Outside Vercel, build:vercel builds without touching the database. `npm run migrate`
+remains available explicitly against the intended database. For `vercel build`,
+first load the intended project environment using the Vercel CLI.
 
-Git and package.json name the frontend workspace `Client`, but package-lock.json
-currently records `client` and links `node_modules/transport-client` to `client`.
-Windows can hide this mismatch; a case-sensitive Linux installation can resolve
-the wrong or nonexistent workspace path. The backend-only install must still be
-verified in a clean Linux environment; a Windows build does not prove that check.
+## Serverless routing and sessions
 
-The lockfile has intentionally not been changed in this deployment update. The
-required correction, if authorized, is to regenerate package-lock.json in a clean,
-case-sensitive checkout with `Client` as the workspace directory, verify that the
-workspace entry, nested entries and transport-client link all use `Client`, review
-the dependency diff, and check both the backend install command and frontend build.
-Do not rename the application directory or manually replace unrelated text.
+api/index.mjs delegates to services/src/vercel.js, reusing the integrated Express
+app and database trip catalog. One bounded pool (three connections per warm
+instance) is managed with @vercel/functions for Fluid compute. The function does
+not call listen, run workers, migrate, seed or write runtime files. The standalone
+services/src/server.js remains for local development.
 
-## Public acceptance checks
+Root rewrites send /api/:path* to /api/index and frontend routes to /index.html.
+The SPA fallback excludes /api and /api/...; API failures cannot return index.html.
+Static assets come from Client/dist. No CORS or cross-origin cookies are needed.
 
-1. Direct API `/api/auth/me` returns JSON 401 without a session. This is expected,
-   not a health endpoint returning 200. Development login returns 404. An unexpected
-   Origin is rejected on email POST. Never log real tokens or cookie values.
-2. Through the Vercel URL, request and redeem the student's real email link. Check
-   authenticated `/api/auth/me`, refresh persistence and token replay rejection.
-3. Save/read the student's gender profile; read trips and seat availability.
-4. Within a real booking window, book an eligible seat/standing place, read history,
-   cancel it, and confirm capacity is released. Outside the window expect rejection.
-5. Log in using the driver's actual email link and verify assigned trips/dashboard.
-6. Submit/read a complaint and feedback. Using the authority inbox, respond to the
-   complaint, then check the student's notification and mark it read.
-7. Logout, then confirm `/api/auth/me` is 401. Repeat using public Chrome against
-   the Vercel frontend, including refresh and protected routes.
+Sessions stay in PostgreSQL auth_sessions across cold starts. Cookies are host-only
+__Host-bracu.sid, Secure, HttpOnly, SameSite=Lax, Path=/, with no Domain attribute.
+Expiration is checked on authenticated requests. Background pruning is disabled
+for serverless; expired session/token rows can be removed by database maintenance
+independently of authentication validity. Provider connection quotas and Vercel
+function-duration limits still apply. Standalone queue workers are not deployed;
+all existing synchronous feature APIs are retained.
 
-Render Free sleeps after 15 idle minutes (roughly a minute to wake), has ephemeral
-disk and monthly instance/bandwidth/build limits. Neon Free has usage quotas and
-scales down when idle. These are demo services, not production availability promises.
-Hosted provisioning and end-to-end acceptance remain pending until account access,
-SMTP and actual inbox verification are available.
+## Verification
+
+Run npm test, npm run build and then npm run test:frontend. Serverless tests cover
+the actual function adapter, persistent PostgreSQL sessions, secure cookies,
+email verification/replay, origin checks, optional services and integrated APIs.
+Migration build gating and routing configuration are checked separately.
+
+Run vercel dev from the repository root with the intended local project environment
+for platform routing checks. Actual Vercel builds/public verification require
+deployment account access. After deploying, /api/auth/me should return JSON 401
+anonymously, /login should serve the SPA, and direct-login routes must return 404.
+Use a real inbox to verify login, refresh persistence, logout and protected routes.
+Booking confirmations still obey server-time windows, stored gender, capacity,
+daily limits and concurrency restrictions.

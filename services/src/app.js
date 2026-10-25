@@ -16,10 +16,12 @@ export function createApp({ config, pool, provider = createGoogleProvider(config
   app.disable('x-powered-by');
   if (config.trustProxy) app.set('trust proxy', 1);
   app.use(helmet());
+  app.use('/api', (req, res, next) => { res.set('Cache-Control', 'no-store'); next(); });
   app.use('/api/auth', (req, res, next) => { res.set('Cache-Control', 'no-store'); res.set('Pragma', 'no-cache'); next(); });
   const PgStore = connectPgSimple(session);
   app.use(session({ name: config.cookieName, secret: config.secret,
-    store: store || new PgStore({ pool, tableName: 'auth_sessions', createTableIfMissing: false }),
+    store: store || new PgStore({ pool, tableName: 'auth_sessions', createTableIfMissing: false,
+      ...(config.serverless ? { pruneSessionInterval: false } : {}) }),
     resave: false, saveUninitialized: false, rolling: false,
     cookie: { httpOnly: true, secure: config.secure, sameSite: 'lax', maxAge: config.ttlMs, path: '/' } }));
   app.use('/api/auth', authRoutes(createAuthService({ config, pool, provider, sendEmail }), config));

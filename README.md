@@ -15,6 +15,13 @@ For immediate local student/registered-staff login, see [local direct login](doc
 
 Email sign-in uses existing accounts and one-time links. SMTP settings enable real delivery. The explicit loopback-only `DEV_EMAIL_LOGIN=true` mechanism remains available for the registered local test student; see `docs/local-student-login.md`. Existing optional Google endpoints remain compatible, but email sign-in does not require Google credentials.
 
+## Vercel deployment
+
+The frontend and integrated Express API deploy together from the repository root.
+Use [the Vercel deployment guide](docs/demo-deployment.md) for the root configuration,
+required DATABASE_URL/SESSION_SECRET, build-time migrations and optional email delivery.
+No separate backend service or demo seed is required to start the API.
+
 ## Database
 
 All migrations are tracked under lowercase `database/migrations` for Windows/Linux compatibility. Both migration commands use the same transactional runner and migration ledger. The order is authentication, fleet/trips, drivers, email tokens, student booking/complaints, Member 4 extensions, then integration constraints. `003_member4.sql` extends the existing complaints table; it does not create a second complaint system. Member 2's API retains its existing status vocabulary while authority updates and notifications share those records.

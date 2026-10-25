@@ -1,10 +1,50 @@
 import { validateBracuEmail } from '../src/services/authService.js';
 
+const roles = ['student', 'driver', 'authority'];
+
+// Validate operator configuration before opening a connection or writing any data.
+// Never include supplied addresses in errors: Render logs may be shared publicly.
+export function demoEmails(env) {
+  const fields = [];
+  const config = {};
+  if (env.BRACU_STUDENT_EMAIL_PATTERN) {
+    try { config.emailPattern = new RegExp(`^(?:${env.BRACU_STUDENT_EMAIL_PATTERN})$`, 'i'); }
+    catch {
+      throw Object.assign(new Error('Invalid BRACU_STUDENT_EMAIL_PATTERN configuration'), {
+        name: 'DemoConfigurationError', code: 'invalid_email_pattern',
+        fields: [{variable:'BRACU_STUDENT_EMAIL_PATTERN',reason:'invalid_regular_expression'}]
+      });
+    }
+  }
+  const emails = roles.map(role => {
+    const variable = `DEMO_${role.toUpperCase()}_EMAIL`;
+    const raw = env[variable];
+    // Environment-entry whitespace is configuration formatting, not an auth bypass.
+    const value = typeof raw === 'string' ? raw.trim() : raw;
+    try { return validateBracuEmail(value, config); }
+    catch {
+      fields.push({variable,reason:!value ? 'required' : 'invalid_email'});
+      return null;
+    }
+  });
+  if (fields.length) {
+    throw Object.assign(new Error('Invalid demo email configuration: ' + fields.map(f=>f.variable+' ('+f.reason+')').join(', ')), {
+      name:'DemoConfigurationError',code:'invalid_email',fields
+    });
+  }
+  if (new Set(emails).size !== roles.length) {
+    const duplicates = roles.flatMap((role,index)=>emails.filter(e=>e===emails[index]).length>1
+      ? [{variable:`DEMO_${role.toUpperCase()}_EMAIL`,reason:'duplicate_inbox'}] : []);
+    throw Object.assign(new Error('Demo roles require three distinct inboxes'), {
+      name:'DemoConfigurationError',code:'duplicate_demo_email',fields:duplicates
+    });
+  }
+  return emails;
+}
+
 // Explicit demo provisioning, independent of all local authentication bypasses.
 export async function seedDemo(db, env) {
-  const roles = ['student', 'driver', 'authority'];
-  const emails = roles.map(role => validateBracuEmail(env[`DEMO_${role.toUpperCase()}_EMAIL`]));
-  if (new Set(emails).size !== roles.length) throw new Error('Demo roles require three distinct inboxes');
+  const emails = demoEmails(env);
   await db.query('BEGIN');
   try {
     await db.query('SELECT pg_advisory_xact_lock(376302)');
