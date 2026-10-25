@@ -17,3 +17,15 @@ it('logout accepts a no-content response', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ status: 204, ok: true }));
   expect(await authApi.logout()).toBeNull();
 });
+it('development login uses the guarded endpoint and only 404 falls back to email verification',async()=>{
+  const fetch=vi.fn().mockResolvedValueOnce({status:200,ok:true,json:async()=>({authenticated:true})});
+  vi.stubGlobal('fetch',fetch);
+  expect(await authApi.requestEmail('lisan.taslim@g.bracu.ac.bd')).toEqual({authenticated:true});
+  expect(fetch).toHaveBeenCalledWith('/api/auth/development/email-login',expect.objectContaining({method:'POST',credentials:'include'}));
+  fetch.mockReset().mockResolvedValueOnce({status:404,ok:false}).mockResolvedValueOnce({status:202,ok:true,json:async()=>({message:'Check your email for a sign-in link.'})});
+  await authApi.requestEmail('lisan.taslim@g.bracu.ac.bd');
+  expect(fetch.mock.calls[1][0]).toBe('/api/auth/email');
+  fetch.mockReset().mockResolvedValueOnce({status:403,ok:false});
+  await expect(authApi.requestEmail('lisan.taslim@g.bracu.ac.bd')).rejects.toThrow();
+  expect(fetch).toHaveBeenCalledTimes(1);
+});

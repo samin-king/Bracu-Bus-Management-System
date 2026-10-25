@@ -1,3 +1,4 @@
+import {DEV_STUDENT_EMAIL, localDirectLoginEnabled} from '../config/devEmailLogin.js';
 import { OAuth2Client } from 'google-auth-library';
 import { randomBytes, createHash, timingSafeEqual } from 'node:crypto';
 export class AuthError extends Error {
@@ -39,8 +40,51 @@ export function createGoogleProvider(config) {
     }
   };
 }
-export function createAuthService({ pool, provider, config }) {
+export function validateBracuEmail(value,config={}) {
+ if(typeof value!=='string'||value.length>254||value.split('@')[0].length>64||!/^[a-z]+(?:\.[a-z]+){0,7}@g\.bracu\.ac\.bd$/i.test(value)||value.trim()!==value|| (config.emailPattern&&!config.emailPattern.test(value))) throw new AuthError('invalid_email',400);
+ return value.toLowerCase();
+}
+export function createAuthService({ pool, provider, config, sendEmail }) {
   return {
+    async developmentLogin(value) {
+      if (!config.devDirectLogin || !localDirectLoginEnabled({DEV_DIRECT_LOGIN:'true',NODE_ENV:config.nodeEnv,DATABASE_URL:config.databaseUrl,FRONTEND_URL:config.frontendUrl})) {
+        throw new AuthError('not_found',404);
+      }
+      const email=validateBracuEmail(value,config);
+      const existing=(await pool.query('SELECT id FROM users WHERE email=$1',[email])).rows[0];
+      if(existing){
+        const user=await this.findUser(existing.id);
+        if(!user) throw new AuthError('account_unavailable',403);
+        return user;
+      }
+      // Reuse the sole users table. Synthetic subjects are explicitly local identifiers,
+      // never Google credentials. Existing account roles/profile fields are not changed.
+      const row=(await pool.query(`INSERT INTO users(google_subject,name,email,role)
+        VALUES($1,$2,$3,'student') ON CONFLICT(email) DO UPDATE SET email=EXCLUDED.email
+        WHERE users.role='student' RETURNING id,name,email,role`,
+        ['local-development:email:'+email,email.split('@')[0].split('.').map(s=>s[0].toUpperCase()+s.slice(1)).join(' '),email])).rows[0];
+      if(!row) throw new AuthError('account_unavailable',403);
+      return row;
+    },
+    async requestEmail(value) {
+      const email=validateBracuEmail(value,config);
+      if(!sendEmail) throw new AuthError('email_not_configured',503);
+      if(config.devEmailLogin&&email!==DEV_STUDENT_EMAIL) return;
+      const user=(await pool.query("SELECT id FROM users WHERE email=$1 AND role IN ('student','driver','authority','admin')",[email])).rows[0];
+      if(!user) return;
+      const token=randomToken(),hash=createHash('sha256').update(token).digest('hex');
+      await pool.query('INSERT INTO email_login_tokens(token_hash,user_id,expires_at) VALUES($1,$2,$3)',[hash,user.id,new Date(Date.now()+600000)]);
+      try {await sendEmail({email,url:config.frontendUrl+'/login#email_token='+token});}
+      catch {await pool.query('DELETE FROM email_login_tokens WHERE token_hash=$1',[hash]);throw new AuthError('email_delivery_failed',503);}
+    },
+    async verifyEmail(token) {
+      if(typeof token!=='string'||! /^[A-Za-z0-9_-]{43}$/.test(token)) throw new AuthError('invalid_email_token');
+      const result=await pool.query('DELETE FROM email_login_tokens WHERE token_hash=$1 AND expires_at>NOW() RETURNING user_id',[createHash('sha256').update(token).digest('hex')]);
+      if(!result.rows[0]) throw new AuthError('invalid_email_token');
+      const user=await this.findUser(result.rows[0].user_id);
+      if(!user) throw new AuthError('unauthenticated');
+      return user;
+    },
     begin() {
       const flow = { state: randomToken(), nonce: randomToken(), verifier: randomToken(), createdAt: Date.now() };
       return { flow, url: provider.authorizationUrl(flow) };
@@ -67,8 +111,15 @@ export function createAuthService({ pool, provider, config }) {
       }
     },
     async findUser(id) {
-      const result = await pool.query("SELECT id, name, email, role FROM users WHERE id = $1 AND role = 'student'", [id]);
-      return result.rows[0] || null;
+      const result = await pool.query("SELECT * FROM users WHERE id = $1", [id]);
+      const row=result.rows[0];
+      if(!row || !['student','driver','authority','admin'].includes(row.role)) return null;
+      if(row.role==='driver'){
+        if(!Number.isInteger(Number(row.driver_id))||Number(row.driver_id)<1) return null;
+        const driver=(await pool.query('SELECT id,status FROM drivers WHERE id=$1',[row.driver_id])).rows[0];
+        if(!driver||driver.status!=='ACTIVE') return null;
+      }
+      return {id:row.id,name:row.name,email:row.email,role:row.role,...(row.driver_id==null?{}:{driver_id:row.driver_id})};
     }
   };
 }

@@ -25,6 +25,9 @@ export function windowOpen(trip, date, now) {
   const { opensAt, closesAt, departure } = bookingWindow(trip, date);
   return now >= opensAt && now < closesAt && now < departure;
 }
+export function femaleReservedSeatCount(capacity) {
+  return Math.min(18, Math.max(0, capacity));
+}
 export function validateSeat(trip, gender, seat, standing) {
   if (standing) {
     if (seat != null) throw new Member2Error('invalid_seat');
@@ -32,6 +35,6 @@ export function validateSeat(trip, gender, seat, standing) {
     if (!(trip.standingCapacity > 0)) throw new Member2Error('standing_unavailable');
   } else {
     if (!Number.isInteger(seat) || seat < 1 || seat > trip.capacity) throw new Member2Error('invalid_seat');
-    if (seat <= 18 && gender !== 'female') throw new Member2Error('women_reserved', 403);
+    if (seat <= femaleReservedSeatCount(trip.capacity) && gender !== 'female') throw new Member2Error('women_reserved', 403);
   }
 }

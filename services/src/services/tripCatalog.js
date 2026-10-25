@@ -16,3 +16,15 @@ export function createTripCatalog(trips = []) {
   const catalog = structuredClone(trips);
   return { async list(date) { return structuredClone(catalog.filter(t => !t.dates || t.dates.includes(date))); } };
 }
+
+export function createDatabaseTripCatalog(pool) {
+ return {async list(date) {
+  const {rows}=await pool.query(`SELECT t.id::text, b.bus_number AS bus, r.route_name AS route,
+   to_char(t.departure_time,'HH24:MI') AS "departureTime", b.capacity,
+   COALESCE(b.standing_capacity,0) AS "standingCapacity"
+   FROM trips t JOIN buses b ON b.id=t.bus_id JOIN routes r ON r.id=t.route_id
+   WHERE t.travel_date=$1 AND t.status='SCHEDULED'
+   AND t.departure_time IN ('06:30','08:30','14:00','17:00') ORDER BY t.departure_time,t.id`,[date]);
+  return rows;
+ }};
+}

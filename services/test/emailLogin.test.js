@@ -29,7 +29,7 @@ test('production permits email delivery independently of Google credentials', ()
 
 test('email authentication integrates with existing users and sessions', async t => {
   const pool = new PGlite();
-  for (const file of ['001_authentication.sql', '002_email_login.sql']) await pool.exec(await readFile(new URL(`../../Database/migrations/${file}`, import.meta.url), 'utf8'));
+  for (const file of ['001_authentication.sql', '002_email_login.sql']) await pool.exec(await readFile(new URL(`../../database/migrations/${file}`, import.meta.url), 'utf8'));
   const messages = [];
   const store = new session.MemoryStore();
   let deliveryFails = false;

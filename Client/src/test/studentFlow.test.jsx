@@ -17,6 +17,7 @@ it('real AuthProvider and ProtectedRoute recognize the verified student and perm
       expect(options.credentials).toBe('include');
       signedIn = true; body = student;
     } else if (url === '/api/auth/logout') { signedIn = false; status = 204; }
+    else if(String(url).startsWith('/api/notifications')||url==='/api/student/bookings')body=[];
     else throw new Error('Unexpected API request');
     return { ok: status >= 200 && status < 300, status, json: async () => body };
   });
@@ -25,10 +26,11 @@ it('real AuthProvider and ProtectedRoute recognize the verified student and perm
   render(<App />);
   const user = userEvent.setup();
   await user.click(await screen.findByRole('button', { name: 'Verify email and sign in' }));
-  await screen.findByText('Signed in as Member 1 Local Test Student');
-  expect(screen.getByText(student.email)).toBeInTheDocument();
+  await screen.findByRole('heading',{name:'Student Dashboard'});
+  expect(screen.getAllByRole('link',{name:'Book a Seat'})[0]).toHaveAttribute('href','/book');
+  expect(screen.getByText(student.name)).toBeInTheDocument();
   expect(window.location.pathname).toBe('/');
-  await user.click(screen.getByRole('button', { name: 'Sign out' }));
-  await screen.findByRole('textbox', { name: 'BRACU student email' });
+  await user.click(screen.getByRole('button', { name: 'Logout' }));
+  await screen.findByRole('textbox', { name: 'BRACU email' });
   expect(window.location.pathname).toBe('/login');
 });

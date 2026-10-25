@@ -1,4 +1,10 @@
+import {localEmailLoginEnabled, localDirectLoginEnabled} from './devEmailLogin.js';
 export function loadAuthConfig(env = process.env) {
+  const devDirectLogin=localDirectLoginEnabled(env);
+  const devEmailLogin=localEmailLoginEnabled(env);
+  const smtpPort=Number(env.SMTP_PORT || 587);
+  if(!Number.isInteger(smtpPort)||smtpPort<1||smtpPort>65535) throw new Error('Invalid SMTP_PORT');
+  if(Boolean(env.SMTP_USER)!==Boolean(env.SMTP_PASSWORD)) throw new Error('SMTP_USER and SMTP_PASSWORD must both be configured');
   for (const key of ['DATABASE_URL', 'GOOGLE_CALLBACK_URL', 'FRONTEND_URL', 'SESSION_SECRET']) {
     if (!env[key]?.trim()) throw new Error(`Missing configuration: ${key}`);
   }
@@ -6,7 +12,7 @@ export function loadAuthConfig(env = process.env) {
   const production = env.NODE_ENV === 'production';
   const hasClientId = Boolean(env.GOOGLE_CLIENT_ID?.trim());
   const hasClientSecret = Boolean(env.GOOGLE_CLIENT_SECRET?.trim());
-  if (hasClientId !== hasClientSecret || (production && !hasClientId)) throw new Error('Google OAuth credentials must both be configured');
+  if (hasClientId !== hasClientSecret) throw new Error('Google OAuth credentials must both be configured');
   for (const key of ['FRONTEND_URL', 'GOOGLE_CALLBACK_URL']) {
     const url = new URL(env[key]);
     if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || (production && url.protocol !== 'https:')) throw new Error(`Invalid URL: ${key}`);
@@ -17,6 +23,7 @@ export function loadAuthConfig(env = process.env) {
   if (!Number.isFinite(ttlHours) || ttlHours <= 0 || ttlHours > 24) throw new Error('SESSION_TTL_HOURS must be greater than zero and at most 24');
   const secure = env.SESSION_COOKIE_SECURE === 'true' || production;
   return {
+    devDirectLogin,devEmailLogin,nodeEnv:env.NODE_ENV,smtpHost:env.SMTP_HOST,smtpPort,smtpSecure:env.SMTP_SECURE==='true',smtpUser:env.SMTP_USER,smtpPassword:env.SMTP_PASSWORD,emailFrom:env.EMAIL_FROM,
     databaseUrl: env.DATABASE_URL, clientId: env.GOOGLE_CLIENT_ID, clientSecret: env.GOOGLE_CLIENT_SECRET,
     callbackUrl: env.GOOGLE_CALLBACK_URL, frontendUrl: new URL(env.FRONTEND_URL).origin,
     domain, emailPattern: env.BRACU_STUDENT_EMAIL_PATTERN ? new RegExp(`^(?:${env.BRACU_STUDENT_EMAIL_PATTERN})$`, 'i') : null,
