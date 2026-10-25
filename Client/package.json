@@ -1,1 +1,20 @@
-{"name":"bracu-auth-client","private":true,"type":"module","scripts":{"dev":"vite --host 127.0.0.1","build":"vite build","test":"vitest run"},"dependencies":{"react":"^18.3.1","react-dom":"^18.3.1","react-router-dom":"^7.18.4"},"devDependencies":{"@tailwindcss/postcss":"^4.3.3","@testing-library/jest-dom":"^6.6.3","@testing-library/react":"^16.2.0","@vitejs/plugin-react":"^6.1.2","autoprefixer":"^10.4.21","jsdom":"^26.0.0","postcss":"^8.5.3","tailwindcss":"^4.3.3","vite":"^8.3.4","vitest":"^5.0.5"}}
+{
+  "name": "transport-client",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "vite": "^6.4.0",
+    "tailwindcss": "^4.3.3",
+    "postcss": "^8.5.3",
+    "@tailwindcss/postcss": "^4.3.3"
+  }
+}
