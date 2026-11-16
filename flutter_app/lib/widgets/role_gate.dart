@@ -13,7 +13,7 @@ class RoleGate extends StatelessWidget {
   final TransportRole role;
   final WidgetBuilder builder;
   @override
-  Widget build(BuildContext context) => api.session?.role == role
+  Widget build(BuildContext context) => api.hasRole(role)
       ? builder(context)
       : const Scaffold(
           body: SafeArea(

@@ -19,7 +19,8 @@ android {
         applicationId = "edu.bracu.bracu_transport"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        // flutter_secure_storage 11.2 requires Android API 24.
+        minSdk = maxOf(flutter.minSdkVersion, 24)
         targetSdk = flutter.targetSdkVersion
         // Uses the version code from pubspec.yaml. When using split APKs, 1000 * ABI_VERSION
         // is added automatically by Flutter. (https://developer.android.com/studio/build/configure-apk-splits#configure-APK-versions)
@@ -27,6 +28,8 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["authCallbackHost"] = providers.gradleProperty("authCallbackHost").getOrElse("unconfigured.invalid")
+        manifestPlaceholders["authFrontendHost"] = providers.gradleProperty("authFrontendHost").getOrElse("unconfigured.invalid")
     }
 
     buildTypes {
