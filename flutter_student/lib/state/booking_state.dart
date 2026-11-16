@@ -2,9 +2,74 @@ import 'package:flutter/foundation.dart';
 
 import '../models/booking.dart';
 import '../services/student_api.dart';
+import '../services/transport_api.dart';
+import '../models/transport.dart';
 
 class BookingState extends ChangeNotifier {
-  BookingState(this.api);
+  BookingState(this.api, {TransportApi? transportApi})
+      : transportApi = transportApi ??
+            (api is HttpStudentApi ? HttpTransportApi(api) : null);
+  final TransportApi? transportApi;
+  RoutePattern? selectedRoute;
+  String? pickupStopId, dropoffStopId;
+  List<Trip> get visibleTrips => trips
+      .where((t) =>
+          selectedRoute == null ||
+          (t.json['variantId'] == selectedRoute!.variantId &&
+              t.direction == selectedRoute!.direction))
+      .toList();
+  bool get validStops {
+    final trip = availability?.trip;
+    if (trip == null || !trip.requiresStops) return true;
+    final pickup = trip.stops
+        .where((s) => s['id'] == pickupStopId && s['pickupAllowed'] == true)
+        .firstOrNull;
+    final drop = trip.stops
+        .where((s) => s['id'] == dropoffStopId && s['dropoffAllowed'] == true)
+        .firstOrNull;
+    return pickup != null &&
+        (!trip.dropoffSupported ||
+            (drop != null &&
+                (drop['sequence'] as int) > (pickup['sequence'] as int)));
+  }
+
+  Future<void> selectRoute(RoutePattern route) async {
+    if (busy) return;
+    selectedRoute = route;
+    availability = null;
+    confirmed = null;
+    pickupStopId = null;
+    dropoffStopId = null;
+    clearSelection();
+    notifyListeners();
+    await load();
+  }
+
+  void choosePickup(String? value) {
+    if (busy ||
+        availability?.trip.stops
+                .any((s) => s['id'] == value && s['pickupAllowed'] == true) !=
+            true) return;
+    pickupStopId = value;
+    if (!validStops) dropoffStopId = null;
+    notifyListeners();
+  }
+
+  void chooseDropoff(String? value) {
+    if (busy) return;
+    final pickup = availability?.trip.stops
+        .where((s) => s['id'] == pickupStopId)
+        .firstOrNull;
+    if (pickup == null ||
+        availability?.trip.stops.any((s) =>
+                s['id'] == value &&
+                s['dropoffAllowed'] == true &&
+                (s['sequence'] as int) > (pickup['sequence'] as int)) !=
+            true) return;
+    dropoffStopId = value;
+    notifyListeners();
+  }
+
   final StudentApi api;
   bool _disposed = false;
   @override
@@ -31,6 +96,7 @@ class BookingState extends ChangeNotifier {
   bool get hasSelection => seat != null || standing;
   bool get canSubmit =>
       hasSelection &&
+      validStops &&
       availability?.open == true &&
       !busy &&
       !uncertain &&
@@ -75,6 +141,8 @@ class BookingState extends ChangeNotifier {
   Future<void> changeDate(String value) async {
     if (busy) return;
     date = value;
+    pickupStopId = null;
+    dropoffStopId = null;
     availability = null;
     clearSelection();
     confirmed = null;
@@ -89,6 +157,8 @@ class BookingState extends ChangeNotifier {
   Future<void> selectTrip(Trip trip) async {
     if (busy) return;
     final generation = ++_generation;
+    pickupStopId = null;
+    dropoffStopId = null;
     clearSelection();
     availability = null;
     confirmed = null;
@@ -137,6 +207,7 @@ class BookingState extends ChangeNotifier {
       // Recheck server availability/window, without implementing local rules.
       await _refreshAvailability();
       if (!availability!.open) throw ApiFailure('booking_window_closed');
+      if (!validStops) throw ApiFailure('invalid_stop_selection');
       if (standing
           ? availability!.standing <= 0
           : !availability!.selectable(seat!))
@@ -146,6 +217,8 @@ class BookingState extends ChangeNotifier {
         'travelDate': date,
         'seatNumber': seat,
         'standing': standing,
+        if (availability!.trip.requiresStops) 'pickupStopId': pickupStopId,
+        if (availability!.trip.requiresStops) 'dropoffStopId': dropoffStopId,
       });
       confirmed = result;
       clearSelection();

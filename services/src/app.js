@@ -7,6 +7,8 @@ import { authRoutes } from './routes/authRoutes.js';
 import { member2Routes } from './routes/member2Routes.js';
 import { createMember2Service } from './services/member2Service.js';
 import { createTripCatalog } from './services/tripCatalog.js';
+import { createTransportService } from './services/transportService.js';
+import { transportRoutes } from './routes/transportRoutes.js';
 import { Member2Error } from './services/bookingRules.js';
 export function createApp({ config, pool, provider = createGoogleProvider(config), store, tripCatalog = createTripCatalog(), clock }) {
   const app = express();
@@ -20,12 +22,17 @@ export function createApp({ config, pool, provider = createGoogleProvider(config
     resave: false, saveUninitialized: false, rolling: false,
     cookie: { httpOnly: true, secure: config.secure, sameSite: 'lax', maxAge: config.ttlMs, path: '/' } }));
   app.use('/api/auth', authRoutes(createAuthService({ config, pool, provider }), config));
+  const transport = createTransportService({ pool });
+  const transportAuth = createAuthService({ config, pool, provider });
+  app.use('/api/student/transport', transportRoutes(transport, transportAuth, config));
+  app.use('/api/transport-admin', transportRoutes(transport, transportAuth, config, { admin: true }));
   app.use('/api/student', member2Routes(createMember2Service({ pool, tripCatalog, clock }), createAuthService({ config, pool, provider }), config));
   app.use((req, res) => res.status(404).json({ error: 'not_found' }));
   app.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
     if (error instanceof AuthError) return res.status(error.status).json({ error: error.code });
     if (error instanceof Member2Error) return res.status(error.status).json({ error: error.code });
+    if (error.code === '23503' || error.code === '23514' || error.code === '22P02') return res.status(400).json({ error: 'invalid_transport_reference' });
     if (error.type === 'entity.parse.failed') return res.status(400).json({ error: 'invalid_json' });
     if (error.type === 'entity.too.large') return res.status(413).json({ error: 'request_too_large' });
     console.error('Authentication request failed', { type: error.constructor.name, code: error.code });

@@ -4,6 +4,10 @@ import '../../models/booking.dart';
 import '../../state/booking_state.dart';
 import '../../widgets/booking_summary.dart';
 import '../../widgets/seat_map.dart';
+import '../../widgets/trip_stops.dart';
+import '../../models/transport.dart';
+import 'bus_routes.dart';
+import '../admin/transport_admin.dart';
 
 class StudentBookingScreen extends StatefulWidget {
   const StudentBookingScreen({
@@ -108,6 +112,16 @@ class _StudentBookingScreenState extends State<StudentBookingScreen>
                     'Booking outcome is unknown. Check history before making another booking. Reopen this module only after verifying the outcome.',
                   ),
                 if (tab == 0) ...[
+                  if (state.transportApi != null) ...[
+                    OutlinedButton(
+                        onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute<void>(
+                                builder: (_) =>
+                                    BusRoutesScreen(api: state.transportApi!))),
+                        child: const Text('Bus Routes & Stoppages')),
+                    TransportAdminEntry(api: state.transportApi!),
+                  ],
                   Text(
                     'Plan your journey',
                     style: Theme.of(context).textTheme.headlineMedium,
@@ -125,6 +139,35 @@ class _StudentBookingScreenState extends State<StudentBookingScreen>
                   ),
                 ],
                 if (tab == 1) ...[
+                  if (state.transportApi != null) ...[
+                    OutlinedButton(
+                        onPressed: state.busy
+                            ? null
+                            : () async {
+                                final route =
+                                    await Navigator.push<RoutePattern>(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (_) => BusRoutesScreen(
+                                                api: state.transportApi!,
+                                                selectForBooking: true)));
+                                if (route != null)
+                                  await state.selectRoute(route);
+                              },
+                        child: Text(state.selectedRoute == null
+                            ? 'Select route'
+                            : '${state.selectedRoute!.name} · ${state.selectedRoute!.direction}')),
+                    if (state.selectedRoute != null)
+                      TextButton(
+                          onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute<void>(
+                                  builder: (_) => BusStoppagesScreen(
+                                      api: state.transportApi!,
+                                      route: state.selectedRoute!))),
+                          child: const Text(
+                              'View route stoppages & scheduled times')),
+                  ],
                   TextButton.icon(
                     icon: const Icon(Icons.calendar_month),
                     label: Text(state.date),
@@ -144,37 +187,40 @@ class _StudentBookingScreenState extends State<StudentBookingScreen>
                               );
                           },
                   ),
-                  if (!state.loading && state.trips.isEmpty)
-                    const Text('No trips available for this date.'),
-                  for (final trip in state.trips)
+                  if (!state.loading && state.visibleTrips.isEmpty)
+                    const Text(
+                        'No assigned, active trips available for this route/date. View route stoppages for published schedule times.'),
+                  for (final trip in state.visibleTrips)
                     Card(
                       child: ListTile(
                         selected: state.availability?.trip.id == trip.id,
                         title: Text('${trip.bus} · ${trip.route}'),
                         subtitle: Text(
-                          '${trip.time} · ${trip.json['bookingOpen'] == true ? 'Booking open' : 'Booking closed'}\nWindow: ${trip.json['opensAt']} – ${trip.json['closesAt']}',
+                          '${trip.json['label'] ?? 'Trip'} · ${trip.time} · ${trip.json['bookingOpen'] == true ? 'Booking open' : 'Booking closed'}\nWindow: ${trip.json['opensAt']} – ${trip.json['closesAt']}',
                         ),
                         onTap: state.busy ? null : () => state.selectTrip(trip),
                       ),
                     ),
                   if (state.availability != null) ...[
+                    TripStopsSelection(state: state),
                     SeatMap(state: state),
                     FilledButton(
-                      onPressed: !state.busy && state.hasSelection
-                          ? () async {
-                              final result =
-                                  await Navigator.of(context).push<Booking>(
-                                MaterialPageRoute(
-                                  builder: (_) => BookingReviewScreen(
-                                    state: state,
-                                    ticketBuilder: widget.ticketBuilder,
-                                  ),
-                                ),
-                              );
-                              if (result != null && mounted)
-                                await openDetails(result);
-                            }
-                          : null,
+                      onPressed:
+                          !state.busy && state.hasSelection && state.validStops
+                              ? () async {
+                                  final result =
+                                      await Navigator.of(context).push<Booking>(
+                                    MaterialPageRoute(
+                                      builder: (_) => BookingReviewScreen(
+                                        state: state,
+                                        ticketBuilder: widget.ticketBuilder,
+                                      ),
+                                    ),
+                                  );
+                                  if (result != null && mounted)
+                                    await openDetails(result);
+                                }
+                              : null,
                       child: const Text('Confirm Booking'),
                     ),
                   ],
@@ -256,6 +302,9 @@ class BookingReviewScreen extends StatelessWidget {
                   Text(
                     'Trip: ${data.trip.id}\nBus: ${data.trip.bus}\nDeparture: ${state.date} ${data.trip.time} (Asia/Dhaka)\n${state.standing ? 'Standing' : 'Seat ${state.seat}'}',
                   ),
+                  if (data.trip.requiresStops)
+                    Text(
+                        'Pickup: ${data.trip.stops.where((s) => s['id'] == state.pickupStopId).firstOrNull?['name']}\nDrop-off: ${data.trip.stops.where((s) => s['id'] == state.dropoffStopId).firstOrNull?['name'] ?? 'Not specified by source'}'),
                   const Text(
                     'Fare: unavailable from current server response. No fare is submitted by this app.',
                   ),

@@ -7,6 +7,10 @@ class Trip {
   String get route => json['route'] as String;
   String get bus => json['bus'] as String;
   String get time => json['departureTime'] as String;
+  bool get requiresStops => json['requiresStops'] == true;
+  List<Json> get stops => (json['stops'] as List? ?? []).cast<Json>();
+  bool get dropoffSupported => json['dropoffSupported'] == true;
+  String? get direction => json['direction'] as String?;
 }
 
 class Availability {

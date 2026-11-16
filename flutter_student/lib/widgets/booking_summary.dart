@@ -21,9 +21,20 @@ class BookingSummary extends StatelessWidget {
             'Booking ID': booking.id,
             'Route': booking.trip.route,
             'Trip': booking.trip.id,
+            if (booking.trip.json['variantCode'] != null)
+              'Route variant': booking.trip.json['variantCode'],
             'Bus': booking.trip.bus,
             'Departure': '${booking.date} ${booking.trip.time} (Asia/Dhaka)',
             'Seat/Standing': booking.place,
+            if (booking.trip.json['direction'] != null)
+              'Direction': booking.trip.json['direction'],
+            if (booking.trip.json['pickup'] != null)
+              'Pickup': booking.trip.json['pickup']['name'],
+            if (booking.trip.json['pickup'] != null)
+              'Scheduled pickup':
+                  '${booking.trip.json['pickup']['pickupTime']} (Asia/Dhaka)',
+            if (booking.trip.json['dropoff'] != null)
+              'Drop-off': booking.trip.json['dropoff']['name'],
             'Fare': booking.fare,
             'Status': booking.status,
           }.entries)

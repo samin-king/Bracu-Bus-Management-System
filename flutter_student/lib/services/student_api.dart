@@ -23,6 +23,14 @@ class ApiFailure implements Exception {
         'cancellation_closed':
             'This trip has departed and cannot be cancelled.',
         'already_cancelled': 'This booking has already been cancelled.',
+        'invalid_stop_selection':
+            'Select valid pickup and drop-off stops for this trip.',
+        'trip_not_ready':
+            'This schedule needs verified data and a bus/driver assignment.',
+        'schedule_in_use':
+            'Future confirmed bookings prevent this schedule change.',
+        'assignment_conflict':
+            'This bus or driver has an overlapping assignment.',
         'network':
             'Connection failed. Refresh booking history before retrying a booking.',
       }[code] ??
@@ -50,12 +58,13 @@ class HttpStudentApi implements StudentApi {
   final String frontendOrigin;
   final Future<String> Function() sessionCookie;
   final HttpClient _client;
-  Future<dynamic> request(String path, {Json? body}) async {
+  Future<dynamic> request(String path,
+      {Json? body, String namespace = '/api/student', String? method}) async {
     try {
       final req = await _client
           .openUrl(
-            body == null ? 'GET' : 'POST',
-            baseUrl.resolve('/api/student$path'),
+            method ?? (body == null ? 'GET' : 'POST'),
+            baseUrl.resolve('$namespace$path'),
           )
           .timeout(const Duration(seconds: 20));
       req.followRedirects = false;

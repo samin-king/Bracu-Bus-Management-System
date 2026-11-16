@@ -101,4 +101,50 @@ void main() {
       await server.close(force: true);
     }
   });
+
+  test(
+      'transport adapter preserves authenticated student/admin namespaces and HTTP methods',
+      () async {
+    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    final seen = <String>[];
+    final bodies = <dynamic>[];
+    server.listen((req) async {
+      seen.add('${req.method} ${req.uri.path}');
+      expect(req.headers.value('cookie'), 'sid=existing');
+      expect(req.headers.value('origin'), 'https://frontend.example');
+      final body = await utf8.decoder.bind(req).join();
+      if (body.isNotEmpty) bodies.add(jsonDecode(body));
+      req.response.headers.contentType = ContentType.json;
+      req.response
+          .write(req.uri.path.endsWith('/routes') ? '[]' : '{"id":"1"}');
+      await req.response.close();
+    });
+    final client = HttpClient();
+    final api = HttpTransportApi(HttpStudentApi(
+        baseUrl: Uri.parse('http://127.0.0.1:${server.port}'),
+        frontendOrigin: 'https://frontend.example',
+        sessionCookie: () async => 'sid=existing',
+        client: client));
+    try {
+      await api.routes();
+      await api.saveSchedule({'label': 'Published trip'}, id: '1');
+      await api.reorder('2', ['3', '4']);
+      await api.removeException('2030-01-02');
+      expect(seen, [
+        'GET /api/student/transport/routes',
+        'PUT /api/transport-admin/schedules/1',
+        'PUT /api/transport-admin/patterns/2/order',
+        'DELETE /api/transport-admin/exceptions/2030-01-02'
+      ]);
+      expect(bodies, [
+        {'label': 'Published trip'},
+        {
+          'stopIds': ['3', '4']
+        }
+      ]);
+    } finally {
+      client.close(force: true);
+      await server.close(force: true);
+    }
+  });
 }

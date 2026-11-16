@@ -110,3 +110,13 @@ verification require the missing host and QR/fare source contracts.
   Flutter test runner required local socket access.
 - No Android APK build/device test, real-session walkthrough, real QR test or fare
   verification was possible with the supplied checkout. No commit or push.
+
+## Official transport schedule integration
+
+The booking package now includes server-driven routes, directions, searchable timed
+stoppages, pickup/drop-off selection and protected transport-admin screens. Backend
+and schema integration is documented in [the integration guide](../docs/transport-schedule-integration.md).
+The earlier frontend-only scope/results above describe the original module session.
+For current requirements/results, use the integration guide and row-by-row
+[source comparison](../docs/transport-schedule-extraction.md). No Android authentication
+host or real QR renderer is added by the schedule integration.

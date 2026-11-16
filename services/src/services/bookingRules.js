@@ -17,7 +17,15 @@ export function bookingWindow(trip, date) {
     '06:30': [previous, '20:00', date, '06:30'],
     '08:30': [previous, '21:00', date, '08:30']
   };
-  const w = windows[trip.departureTime];
+  // Policy periods are independent of the official first pickup/departure.
+  // Legacy trips keep the exact original lookup and windows.
+  const periodWindows = {
+    morning_1: [previous, '20:00', date, trip.departureTime],
+    morning_2: [previous, '21:00', date, trip.departureTime],
+    afternoon: [date, '10:50', date, '11:15'],
+    evening: [date, '15:20', date, '15:40']
+  };
+  const w = trip.bookingPeriod ? periodWindows[trip.bookingPeriod] : windows[trip.departureTime];
   if (!w) throw new Member2Error('unsupported_departure');
   return { opensAt: new Date(`${w[0]}T${w[1]}:00+06:00`), closesAt: new Date(`${w[2]}T${w[3]}:00+06:00`), departure };
 }

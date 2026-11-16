@@ -3,7 +3,8 @@ description: Student booking frontend for the existing BRACU transport APIs.
 publish_to: none
 version: 1.0.0+1
 environment:
-  sdk: '>=3.4.0 <4.0.0'
+  sdk: '>=3.13.0 <4.0.0'
+  flutter: '>=3.47.0'
 dependencies:
   flutter:
     sdk: flutter
