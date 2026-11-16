@@ -10,14 +10,16 @@ import '../../widgets/role_gate.dart';
 import 'passenger_list_screen.dart';
 
 class DriverDashboard extends StatelessWidget {
-  const DriverDashboard({super.key, required this.api});
+  const DriverDashboard({super.key, required this.api, this.passengerBuilder});
   final ApiClient api;
+  final WidgetBuilder? passengerBuilder;
   @override
   Widget build(BuildContext context) => RoleGate(
-        api: api,
-        role: TransportRole.driver,
-        builder: (_) => _DashboardBody(api: api),
-      );
+    api: api,
+    role: TransportRole.driver,
+    builder: (_) =>
+        _DashboardBody(api: api, passengerBuilder: passengerBuilder),
+  );
 }
 
 class _DashboardData {
@@ -27,8 +29,9 @@ class _DashboardData {
 }
 
 class _DashboardBody extends StatefulWidget {
-  const _DashboardBody({required this.api});
+  const _DashboardBody({required this.api, this.passengerBuilder});
   final ApiClient api;
+  final WidgetBuilder? passengerBuilder;
   @override
   State<_DashboardBody> createState() => _DashboardBodyState();
 }
@@ -53,9 +56,9 @@ class _DashboardBodyState extends State<_DashboardBody> {
   }
 
   void reload() => setState(() {
-        error = null;
-        future = load();
-      });
+    error = null;
+    future = load();
+  });
   Future<void> action(_DashboardData data, Trip trip) async {
     final operation = trip.action!;
     setState(() {
@@ -79,84 +82,83 @@ class _DashboardBodyState extends State<_DashboardBody> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          title: const Text('Driver Dashboard'),
-          actions: [
-            IconButton(
-              onPressed: busy ? null : reload,
-              tooltip: 'Refresh',
-              icon: const Icon(Icons.refresh),
+    appBar: AppBar(
+      title: const Text('Driver Dashboard'),
+      actions: [
+        IconButton(
+          onPressed: busy ? null : reload,
+          tooltip: 'Refresh',
+          icon: const Icon(Icons.refresh),
+        ),
+      ],
+    ),
+    body: SafeArea(
+      child: AsyncBody<_DashboardData>(
+        future: future,
+        retry: reload,
+        builder: (data) => ListView(
+          padding: const EdgeInsets.all(12),
+          children: [
+            RecordCard(record: data.driver),
+            if (data.driver.status != 'ACTIVE')
+              const Padding(
+                padding: EdgeInsets.all(12),
+                child: Text(
+                  'Your driver profile is inactive. Contact transport management.',
+                ),
+              ),
+            if (error != null)
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Text(
+                  error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ),
+            if (notice != null)
+              Padding(padding: const EdgeInsets.all(12), child: Text(notice!)),
+            const Padding(
+              padding: EdgeInsets.all(12),
+              child: Text('Assigned Trips', style: TextStyle(fontSize: 22)),
             ),
+            if (data.trips.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(12),
+                child: Text('No assigned trips.'),
+              ),
+            for (final trip in data.trips)
+              RecordCard(
+                record: trip,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            widget.passengerBuilder ??
+                            (_) => PassengerListScreen(api: widget.api),
+                      ),
+                    ),
+                    child: const Text('View passengers'),
+                  ),
+                  if (trip.action != null)
+                    FilledButton(
+                      onPressed: busy || data.driver.status != 'ACTIVE'
+                          ? null
+                          : () => action(data, trip),
+                      child: Text(
+                        busy
+                            ? 'Updating...'
+                            : trip.action == 'start'
+                            ? 'Start Trip'
+                            : 'Stop Trip',
+                      ),
+                    ),
+                ],
+              ),
           ],
         ),
-        body: SafeArea(
-          child: AsyncBody<_DashboardData>(
-            future: future,
-            retry: reload,
-            builder: (data) => ListView(
-              padding: const EdgeInsets.all(12),
-              children: [
-                RecordCard(record: data.driver),
-                if (data.driver.status != 'ACTIVE')
-                  const Padding(
-                    padding: EdgeInsets.all(12),
-                    child: Text(
-                      'Your driver profile is inactive. Contact transport management.',
-                    ),
-                  ),
-                if (error != null)
-                  Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Text(
-                      error!,
-                      style:
-                          TextStyle(color: Theme.of(context).colorScheme.error),
-                    ),
-                  ),
-                if (notice != null)
-                  Padding(
-                      padding: const EdgeInsets.all(12), child: Text(notice!)),
-                const Padding(
-                  padding: EdgeInsets.all(12),
-                  child: Text('Assigned Trips', style: TextStyle(fontSize: 22)),
-                ),
-                if (data.trips.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.all(12),
-                    child: Text('No assigned trips.'),
-                  ),
-                for (final trip in data.trips)
-                  RecordCard(
-                    record: trip,
-                    children: [
-                      TextButton(
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                PassengerListScreen(api: widget.api),
-                          ),
-                        ),
-                        child: const Text('View passengers'),
-                      ),
-                      if (trip.action != null)
-                        FilledButton(
-                          onPressed: busy || data.driver.status != 'ACTIVE'
-                              ? null
-                              : () => action(data, trip),
-                          child: Text(
-                            busy
-                                ? 'Updating...'
-                                : trip.action == 'start'
-                                    ? 'Start Trip'
-                                    : 'Stop Trip',
-                          ),
-                        ),
-                    ],
-                  ),
-              ],
-            ),
-          ),
-        ),
-      );
+      ),
+    ),
+  );
 }
