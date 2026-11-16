@@ -17,6 +17,9 @@ import 'package:bracu_transport/screens/driver/driver_dashboard.dart';
 import 'package:bracu_transport/screens/driver/passenger_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:bracu_transport/providers/auth_provider.dart';
+import 'package:bracu_transport/services/auth_service.dart';
+import 'support/http_fixture.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
@@ -41,17 +44,17 @@ const driver = {
   'status': 'ACTIVE',
 };
 Map<String, dynamic> trip([String status = 'SCHEDULED']) => {
-      'id': 1,
-      'bus_id': 1,
-      'route_id': 1,
-      'driver_id': 1,
-      'driver': driver,
-      'travel_date': '2026-11-05',
-      'departure_time': '06:30:00',
-      'status': status,
-      'bus': bus,
-      'route': route,
-    };
+  'id': 1,
+  'bus_id': 1,
+  'route_id': 1,
+  'driver_id': 1,
+  'driver': driver,
+  'travel_date': '2026-11-05',
+  'departure_time': '06:30:00',
+  'status': status,
+  'bus': bus,
+  'route': route,
+};
 
 class Fixture {
   bool empty = false, fail = false, inactive = false;
@@ -94,8 +97,8 @@ class Fixture {
         data = path.contains('/')
             ? record
             : empty
-                ? []
-                : [record];
+            ? []
+            : [record];
       }
     }
     return http.Response(
@@ -108,13 +111,14 @@ class Fixture {
     );
   });
   ApiClient api([TransportRole role = TransportRole.authority]) => ApiClient(
-        baseUrl: 'https://example.test/api',
-        session: TransportSession(
-          role: role,
-          headers: () async => {'Authorization': 'Bearer verified'},
-        ),
-        client: client,
-      );
+    session: () => AuthSession(
+      id: '1',
+      name: 'Verified User',
+      email: 'verified@g.bracu.ac.bd',
+      role: role,
+    ),
+    client: fixtureHttp(client),
+  );
 }
 
 Future<void> show(WidgetTester tester, Widget widget) async {
@@ -123,8 +127,11 @@ Future<void> show(WidgetTester tester, Widget widget) async {
 }
 
 Future<void> reveal(WidgetTester tester, String label) async {
-  await tester.scrollUntilVisible(find.text(label), 200,
-      scrollable: find.byType(Scrollable).first);
+  await tester.scrollUntilVisible(
+    find.text(label),
+    200,
+    scrollable: find.byType(Scrollable).first,
+  );
   await tester.pumpAndSettle();
 }
 
@@ -132,26 +139,38 @@ void main() {
   test('malformed records become API errors before rendering', () async {
     final f = Fixture();
     final api = ApiClient(
-        baseUrl: 'https://example.test/api',
-        session: f.api().session,
-        client: MockClient((_) async => http.Response('[{"id":1}]', 200)));
+      session: () => f.api().session,
+      client: fixtureHttp(
+        MockClient((_) async => http.Response('[{"id":1}]', 200)),
+      ),
+    );
     await expectLater(BusService(api).list(), throwsA(isA<ApiException>()));
   });
-  test('backend authorization and conflict errors remain authoritative',
-      () async {
-    final f = Fixture();
-    for (final status in [401, 403, 409]) {
-      final api = ApiClient(
-          baseUrl: 'https://example.test/api',
-          session: f.api(TransportRole.driver).session,
-          client: MockClient((_) async => http.Response(
-              jsonEncode({'error': 'Rejected by backend'}), status)));
-      await expectLater(
+  test(
+    'backend authorization and conflict errors remain authoritative',
+    () async {
+      final f = Fixture();
+      for (final status in [401, 403, 409]) {
+        final api = ApiClient(
+          session: () => f.api(TransportRole.driver).session,
+          client: fixtureHttp(
+            MockClient(
+              (_) async => http.Response(
+                jsonEncode({'error': 'Rejected by backend'}),
+                status,
+              ),
+            ),
+          ),
+        );
+        await expectLater(
           DriverService(api).transition(1, 'start'),
-          throwsA(isA<ApiException>()
-              .having((e) => e.statusCode, 'status', status)));
-    }
-  });
+          throwsA(
+            isA<ApiException>().having((e) => e.statusCode, 'status', status),
+          ),
+        );
+      }
+    },
+  );
   test('models preserve writable contracts and ordered stops', () {
     expect(Bus(bus).writable, {
       'bus_number': 'BRACU-01',
@@ -173,7 +192,11 @@ void main() {
       expect(f.requests.map((r) => r.method), ['GET', 'GET', 'POST', 'PUT']);
       expect(
         f.requests.every(
-          (r) => r.headers['Authorization'] == 'Bearer verified',
+          (r) =>
+              r.headers['cookie'] == '__Host-bracu.sid=verified-session' &&
+              !r.headers.containsKey('authorization') &&
+              (r.method == 'GET' ||
+                  r.headers['origin'] == 'https://frontend.test'),
         ),
         isTrue,
       );
@@ -188,16 +211,17 @@ void main() {
     },
   );
   test(
-      'assignment supports unassign; transitions use POST without identity in body',
-      () async {
-    final f = Fixture();
-    expect((await DriverService(f.api()).assign(1, null)).driverId, isNull);
-    final service = DriverService(f.api(TransportRole.driver));
-    expect((await service.transition(1, 'start')).status, 'ACTIVE');
-    expect((await service.transition(1, 'stop')).status, 'COMPLETED');
-    expect(f.requests.last.method, 'POST');
-    expect(f.requests.last.body, isEmpty);
-  });
+    'assignment supports unassign; transitions use POST without identity in body',
+    () async {
+      final f = Fixture();
+      expect((await DriverService(f.api()).assign(1, null)).driverId, isNull);
+      final service = DriverService(f.api(TransportRole.driver));
+      expect((await service.transition(1, 'start')).status, 'ACTIVE');
+      expect((await service.transition(1, 'stop')).status, 'COMPLETED');
+      expect(f.requests.last.method, 'POST');
+      expect(f.requests.last.body, isEmpty);
+    },
+  );
   test('errors preserve backend status and message', () async {
     final f = Fixture()..fail = true;
     await expectLater(
@@ -216,9 +240,8 @@ void main() {
       MockClient((_) async => throw http.ClientException('offline')),
     ]) {
       final api = ApiClient(
-        baseUrl: 'https://example.test/api',
-        session: f.api().session,
-        client: client,
+        session: () => f.api().session,
+        client: fixtureHttp(client),
       );
       await expectLater(BusService(api).list(), throwsA(isA<ApiException>()));
     }
@@ -279,15 +302,44 @@ void main() {
   testWidgets(
     'signed out app and student app expose no management navigation',
     (tester) async {
-      await tester.pumpWidget(const TransportApp());
+      final anonymous = AuthProvider(
+        AuthService(
+          fixtureHttp(
+            MockClient(
+              (_) async => http.Response('{"error":"unauthenticated"}', 401),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpWidget(TransportApp(auth: anonymous));
       await tester.pumpAndSettle();
-      expect(find.textContaining('Sign in through'), findsOneWidget);
+      expect(find.text('Sign in'), findsOneWidget);
+      final student = AuthProvider(
+        AuthService(
+          fixtureHttp(
+            MockClient(
+              (_) async => http.Response(
+                jsonEncode({
+                  'id': '1',
+                  'name': 'Student',
+                  'email': 'student@g.bracu.ac.bd',
+                  'role': 'student',
+                }),
+                200,
+              ),
+            ),
+          ),
+        ),
+      );
       await tester.pumpWidget(
-        TransportApp(session: Fixture().api(TransportRole.student).session),
+        TransportApp(key: const ValueKey('student'), auth: student),
       );
       await tester.pumpAndSettle();
       expect(find.text('Buses'), findsNothing);
       expect(find.text('Driver Dashboard'), findsNothing);
+      await tester.pumpWidget(const SizedBox());
+      anonymous.dispose();
+      student.dispose();
     },
   );
   testWidgets('bus list and detail use their API endpoints', (tester) async {
@@ -318,13 +370,11 @@ void main() {
   for (final kind in ['route', 'trip', 'driver']) {
     testWidgets('$kind list and details', (tester) async {
       final f = Fixture();
-      await show(
-          tester,
-          switch (kind) {
-            'route' => RouteScreen(api: f.api()),
-            'trip' => TripScreen(api: f.api()),
-            _ => DriverScreen(api: f.api()),
-          });
+      await show(tester, switch (kind) {
+        'route' => RouteScreen(api: f.api()),
+        'trip' => TripScreen(api: f.api()),
+        _ => DriverScreen(api: f.api()),
+      });
       expect(
         find.text(kind == 'driver' ? 'Driver One' : 'Mirpur to BRACU'),
         findsOneWidget,
@@ -334,7 +384,11 @@ void main() {
       expect(find.text('$kind details'), findsOneWidget);
       expect(
         f.requests.last.url.path,
-        '/api/${kind == 'driver' ? 'drivers' : kind == 'route' ? 'routes' : 'trips'}/1',
+        '/api/${kind == 'driver'
+            ? 'drivers'
+            : kind == 'route'
+            ? 'routes'
+            : 'trips'}/1',
       );
     });
   }

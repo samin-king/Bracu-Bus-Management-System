@@ -8,3 +8,13 @@ android/key.properties
 *.keystore
 *.iml
 .idea/
+config/auth.local.json
+config/*.json
+!config/*.example.json
+hosting/assetlinks.json
+android/.kotlin/
+*.apk
+*.aab
+*.apks
+*.hprof
+*.log

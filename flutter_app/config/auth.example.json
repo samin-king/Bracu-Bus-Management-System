@@ -1,0 +1,6 @@
+{
+  "AUTH_API_ORIGIN": "https://your-existing-api.example",
+  "AUTH_FRONTEND_ORIGIN": "https://your-existing-frontend.example",
+  "AUTH_CALLBACK_URL": "",
+  "AUTH_ALLOW_LOCAL_HTTP": false
+}

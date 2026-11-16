@@ -131,7 +131,7 @@ class _RecordDetailState<T extends TransportRecord>
   @override
   void initState() {
     super.initState();
-    if (widget.service.api.session?.role == TransportRole.authority) {
+    if (widget.service.api.hasRole(TransportRole.authority)) {
       future = widget.service.get(widget.id);
     }
   }
