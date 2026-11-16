@@ -15,9 +15,9 @@ export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async ({ background = false } = {}) => {
     const requestRevision = revision.current;
-    setLoading(true);
+    if (!background) setLoading(true);
     try {
       const current = await currentUser();
       if (requestRevision === revision.current) { setUser(current); setError(''); }
@@ -27,13 +27,13 @@ export default function AuthProvider({ children }) {
   }, []);
   useEffect(() => {
     refresh();
-    const onFocus = () => refresh();
+    const onFocus = () => refresh({ background: true });
     window.addEventListener('focus', onFocus);
     return () => window.removeEventListener('focus', onFocus);
   }, [refresh]);
   useEffect(() => {
     if (!user) return;
-    const timer = window.setInterval(refresh, 60000);
+    const timer = window.setInterval(() => refresh({ background: true }), 60000);
     return () => window.clearInterval(timer);
   }, [user, refresh]);
   const logout = useCallback(async () => {

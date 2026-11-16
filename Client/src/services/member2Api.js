@@ -5,6 +5,8 @@ async function request(path, options = {}) {
   if (!response.ok) {
     const messages = {
       unauthenticated: 'Your session has expired. Please sign in again.',
+      invalid_profile: 'Select Male or Female to save your profile.',
+      profile_not_found: 'Your student profile is unavailable. Please sign in again.',
       women_reserved: 'Seats 1–18 require a verified female student profile.',
       booking_conflict: 'This seat or trip is already booked. Refresh availability and choose again.',
       booking_window_closed: 'Booking is closed for this trip.',
@@ -17,6 +19,8 @@ async function request(path, options = {}) {
   return data;
 }
 export const member2Api = {
+  profile:()=>request('/profile'),
+  saveProfile:input=>request('/profile',{method:'PATCH',body:JSON.stringify(input)}),
   trips: date => request(`/trips?date=${encodeURIComponent(date)}`),
   seats: (id, date) => request(`/trips/${encodeURIComponent(id)}/seats?date=${encodeURIComponent(date)}`),
   book: input => request('/bookings', { method: 'POST', body: JSON.stringify(input) }),

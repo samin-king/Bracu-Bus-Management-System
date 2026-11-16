@@ -46,7 +46,7 @@ npm run dev:server
 
 `npm run migrate` uses the existing ledger/transaction runner. `npm run seed:transport` checks the archived image hash, inserts the version once, prints that verification is incomplete, and leaves all assignments/trips inactive. The server now checks that the transport migration exists at startup.
 
-PostgreSQL is the default catalog. `TRANSPORT_CATALOG=legacy-json` is an explicit compatibility/testing fallback to the old `MEMBER2_TRIPS_JSON` adapter; it does not populate the normalized route catalog and is not the deployment configuration for this feature. No old booking API is replaced or duplicated.
+The default combined PostgreSQL catalog includes existing Member 3 trips and verified, assigned official schedules, preserving each source’s IDs and validation. `TRANSPORT_CATALOG=postgres` selects only official schedules; `TRANSPORT_CATALOG=member3` selects only Member 3 trips. `TRANSPORT_CATALOG=legacy-json` is an explicit compatibility/testing fallback to the old `MEMBER2_TRIPS_JSON` adapter; it does not populate the normalized route catalog and is not the deployment configuration for this feature. No old booking API is replaced or duplicated.
 
 ### Administrator provisioning and operations
 
@@ -121,7 +121,7 @@ All routes use existing authenticated sessions. Mutations require the configured
 | PUT | `/api/transport-admin/patterns/:id/order` | Reorder the exact existing association ID set atomically. |
 | POST/PUT | `/api/transport-admin/schedules[/:id]` | Create/update timing, validity, verification and assignments. |
 | PUT | `/api/transport-admin/variants/:id/verification` | Record referenced manual source confirmation. |
-| GET | Existing `/api/student/trips` and `/trips/:id/seats` | Now use assigned, active, verified, calendar-valid DB schedules in default mode. |
+| GET | Existing `/api/student/trips` and `/trips/:id/seats` | Includes existing Member 3 trips and assigned, active, verified, calendar-valid official schedules in default mode. |
 | POST | Existing `/api/student/bookings` | Adds pickupStopId/dropoffStopId for normalized trips, preserving legacy payloads for the explicit legacy catalog. |
 
 Trip responses retain `id`, `bus`, `route`, `departureTime`, `capacity`, `standingCapacity`, window metadata and seat eligibility. New metadata includes schedule/pattern/variant identity, direction, separate arrival time and allowed timed stop associations. New trip IDs use `schedule:<id>`; old text trip IDs and historical snapshots are unchanged.

@@ -1,1 +1,22 @@
-{"name":"bracu-transport-auth","private":true,"workspaces":["services","Client"],"scripts":{"dev:server":"npm run dev -w services","dev:client":"npm run dev -w Client","migrate":"npm run migrate -w services","test":"npm test -w services && npm test -w Client","build":"npm run build -w Client","seed:transport":"node services/scripts/seed-transport.js"}}
+{
+  "name": "bracu-transport",
+  "private": true,
+  "workspaces": [
+    "Client",
+    "server",
+    "services"
+  ],
+  "scripts": {
+    "test": "npm test --workspace services && npm test --workspace server",
+    "build": "npm run build --workspace transport-client",
+    "build:vercel": "node scripts/build-vercel.mjs",
+    "migrate": "npm run migrate --workspace services",
+    "seed": "npm run seed --workspace server",
+    "dev": "npm run dev --workspace services",
+    "test:frontend": "npm test --workspace transport-client && npm run test:frontend --workspace server",
+    "local": "node scripts/start-local.cjs",
+    "seed:transport": "node services/scripts/seed-transport.js",
+    "dev:server": "npm run dev -w services",
+    "dev:client": "npm run dev -w Client"
+  }
+}

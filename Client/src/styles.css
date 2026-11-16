@@ -25,10 +25,13 @@ button:focus-visible, a:focus-visible { outline: 3px solid #0284c7; outline-offs
 .auth-card { background: white; border: 1px solid #e2e5ea; border-top: 3px solid var(--auth-accent); border-radius: 14px; padding: 32px; box-shadow: 0 8px 28px rgb(24 34 48 / 5%); }
 .auth-card h2 { margin: 0; font-size: 24px; font-weight: 650; line-height: 1.35; letter-spacing: -.025em; }
 .auth-description { margin: 16px 0 26px; color: var(--auth-muted); font-size: 15px; line-height: 1.65; }
-.auth-google-button { width: 100%; min-height: 50px; padding: 12px 14px; display: flex; align-items: center; justify-content: center; gap: 12px; border: 1px solid #ccd1da; border-radius: 8px; background: white; color: var(--auth-ink); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
-.auth-google-button svg { flex-shrink: 0; }
-.auth-google-button:hover:not(:disabled) { border-color: var(--auth-accent); background: #faf6f7; }
-.auth-google-button:disabled { opacity: .65; cursor: wait; }
+.auth-email-form { display: grid; gap: 12px; margin-bottom: 12px; text-align: left; }
+.auth-email-form label { color: var(--auth-ink); font-size: 14px; font-weight: 600; }
+.auth-email-form input { box-sizing: border-box; width: 100%; min-width: 0; min-height: 50px; padding: 12px 14px; border: 1px solid #ccd1da; border-radius: 8px; background: white; color: var(--auth-ink); font: inherit; font-size: 14px; }
+.auth-email-form input:focus-visible, .auth-email-button:focus-visible { outline: 2px solid var(--auth-accent); outline-offset: 3px; }
+.auth-email-button { width: 100%; min-height: 50px; padding: 12px 14px; border: 1px solid var(--auth-accent); border-radius: 8px; background: var(--auth-accent); color: white; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.auth-email-button:hover:not(:disabled) { filter: brightness(.9); }
+.auth-email-button:disabled { opacity: .65; cursor: wait; }
 .auth-page button:focus-visible { outline: 3px solid var(--auth-accent); outline-offset: 4px; }
 .auth-note { margin: 22px 0 0; color: var(--auth-muted); font-size: 12px; line-height: 1.8; }
 .auth-note span { font-weight: 600; }

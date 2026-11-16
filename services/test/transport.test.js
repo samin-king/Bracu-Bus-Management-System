@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { migrate } from '../../server/src/utils/database.js';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { PGlite } from '@electric-sql/pglite';
@@ -8,6 +9,7 @@ import { randomUUID } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { createApp } from '../src/app.js';
 import { seedTransport } from '../src/services/transportSeed.js';
+import { createBookingTripCatalog } from '../src/services/bookingTripCatalog.js';
 import { createTransportCatalog } from '../src/services/transportCatalog.js';
 import { createTransportService } from '../src/services/transportService.js';
 import { bookingWindow } from '../src/services/bookingRules.js';
@@ -18,14 +20,14 @@ async function setup(t) {
   const acquire=async()=>{let release;const previous=tail;tail=new Promise(r=>{release=r;});await previous;return release;};
   const pool={async query(...args){const release=await acquire();try{return await db.query(...args);}finally{release();}},async connect(){const release=await acquire();return {query:(...args)=>db.query(...args),release};}};
   t.after(()=>db.close());
-  for(const file of ['001_authentication.sql','002_member2.sql','003_transport_schedule.sql']) await db.exec(await readFile(new URL('../../database/migrations/'+file,import.meta.url),'utf8'));
+  await migrate({query: (sql, params) => params ? db.query(sql, params) : db.exec(sql)});
   await seedTransport(pool,data);
-  const users=(await pool.query("INSERT INTO users(google_subject,name,email,gender) VALUES('admin','Admin','audit.admin@g.bracu.ac.bd','female'),('student','Student','audit.student@g.bracu.ac.bd','male') RETURNING id")).rows;
+  const users=(await pool.query("INSERT INTO users(google_subject,name,email,gender,gender_verified) VALUES('admin','Admin','audit.admin@g.bracu.ac.bd','female',true),('student','Student','audit.student@g.bracu.ac.bd','male',true) RETURNING id")).rows;
   await pool.query('INSERT INTO transport_admins(user_id) VALUES($1)',[users[0].id]);
   const config={frontendUrl:'http://test.local',callbackUrl:'http://test.local/api/auth/google/callback',domain:'g.bracu.ac.bd',secret:'transport-test-secret-more-than-32-characters',cookieName:'sid',ttlMs:3600000,secure:false};
   const store=new session.MemoryStore();const cookies=[];
   for(const u of users){const sid=randomUUID();await new Promise(r=>store.set(sid,{cookie:{maxAge:3600000},userId:u.id,authExpiresAt:Date.now()+3600000},r));cookies.push('sid='+encodeURIComponent('s:'+sign(sid,config.secret)));}
-  const app=createApp({config,pool,store,tripCatalog:createTransportCatalog(pool),clock:()=>new Date('2030-01-02T05:00:00+06:00')});
+  const app=createApp({config,pool,store,tripCatalog:createBookingTripCatalog(pool, {}),clock:()=>new Date('2030-01-02T05:00:00+06:00')});
   const service=createTransportService({pool});
   const get=(path,who=1)=>request(app).get(path).set('Cookie',cookies[who]);
   const write=(method,path,body,who=0)=>request(app)[method](path).set('Cookie',cookies[who]).set('Origin',config.frontendUrl).send(body);
@@ -143,4 +145,18 @@ test('assignment overlaps and malformed stop-time elements are rejected without 
   await assert.rejects(s.service.saveSchedule(s.users[0].id,other.id,input),/assignment_conflict/);
   await assert.rejects(s.service.saveSchedule(s.users[0].id,other.id,{...input,stopTimes:input.stopTimes.map(()=>null)}),/invalid_stop_times/);
   assert.equal((await s.pool.query('SELECT active FROM transport_schedules WHERE id=$1',[other.id])).rows[0].active,false);
+});
+
+test('merged catalog keeps Member 3 trips and official schedules bookable through the same API', async t => {
+  const s = await setup(t);
+  await s.ready();
+  const bus = (await s.pool.query("INSERT INTO buses(bus_number,capacity) VALUES('MERGE-01',37) RETURNING id")).rows[0];
+  const route = (await s.pool.query("INSERT INTO routes(route_name,origin,destination) VALUES('Existing Member 3 route','City','Campus') RETURNING id")).rows[0];
+  const trip = (await s.pool.query("INSERT INTO trips(bus_id,route_id,travel_date,departure_time) VALUES($1,$2,'2030-01-02','06:30') RETURNING id", [bus.id, route.id])).rows[0];
+  const trips = (await s.get('/api/student/trips?date=2030-01-02').expect(200)).body;
+  assert.ok(trips.some(item => item.id === String(trip.id)));
+  assert.ok(trips.some(item => item.id.startsWith('schedule:')));
+  const booking = (await s.write('post', '/api/student/bookings', {tripId:String(trip.id),travelDate:'2030-01-02',seatNumber:19}, 1).expect(201)).body;
+  assert.equal(booking.trip_id, String(trip.id));
+  assert.equal(booking.status, 'confirmed');
 });

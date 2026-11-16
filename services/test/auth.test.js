@@ -173,12 +173,12 @@ test('PostgreSQL store persists authentication and deletes session on logout', a
     assert.equal((await s.pool.query('SELECT * FROM auth_sessions')).rows.length, 0);
   } finally { store.close(); await s.pool.close(); }
 });
-test('development allows absent OAuth credentials but production and partial configuration reject them', () => {
+test('absent OAuth credentials are optional; partial configuration is rejected', () => {
   const env = { DATABASE_URL: 'postgresql://localhost/bracu', GOOGLE_CALLBACK_URL: config.callbackUrl, FRONTEND_URL: config.frontendUrl, SESSION_SECRET: config.secret };
   const development = loadAuthConfig(env);
   assert.equal(development.clientId, undefined);
   assert.throws(() => loadAuthConfig({ ...env, GOOGLE_CLIENT_ID: 'only-one-field' }), /both be configured/);
-  assert.throws(() => loadAuthConfig({ ...env, NODE_ENV: 'production' }), /both be configured/);
+  assert.equal(loadAuthConfig({...env,NODE_ENV:'production',FRONTEND_URL:'https://transport.example',GOOGLE_CALLBACK_URL:'https://transport.example/api/auth/google/callback'}).clientId,undefined);
 });
 test('unconfigured Google OAuth fails closed while anonymous me and logout remain available', async () => {
   const s = await setup();

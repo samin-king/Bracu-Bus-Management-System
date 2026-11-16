@@ -1,8 +1,28 @@
 import { AuthError } from '../services/authService.js';
 const save = req => new Promise((resolve, reject) => req.session.save(error => error ? reject(error) : resolve()));
 const regenerate = req => new Promise((resolve, reject) => req.session.regenerate(error => error ? reject(error) : resolve()));
+async function establishSession(req,user,config){
+  await regenerate(req);
+  req.session.userId=user.id;
+  req.session.authExpiresAt=Date.now()+config.ttlMs;
+  req.session.user=user;
+  await save(req);
+}
 export function createAuthController(service, config) {
   return {
+    async developmentLogin(req,res) {
+      const user=await service.developmentLogin(req.body?.email);
+      await establishSession(req,user,config);
+      res.json({authenticated:true,user});
+    },
+    async email(req,res) {
+      await service.requestEmail(req.body?.email);
+      res.status(202).json({message:'Check your email for a sign-in link.'});
+    },
+    async verifyEmail(req,res) {
+      const user=await service.verifyEmail(req.body?.token);
+      await establishSession(req,user,config);res.json(user);
+    },
     async google(req, res) {
       const { flow, url } = service.begin();
       await regenerate(req);
@@ -16,10 +36,7 @@ export function createAuthController(service, config) {
       await save(req);
       try {
         const user = await service.authenticate(req.query, flow);
-        await regenerate(req);
-        req.session.userId = user.id;
-        req.session.authExpiresAt = Date.now() + config.ttlMs;
-        await save(req);
+        await establishSession(req,user,config);
         res.redirect(`${config.frontendUrl}/`);
       } catch (error) {
         if (error instanceof AuthError) return res.redirect(`${config.frontendUrl}/login?error=${encodeURIComponent(error.code)}`);

@@ -7,7 +7,7 @@ import ProtectedRoute from '../components/ProtectedRoute.jsx';
 import Login from '../pages/Login.jsx';
 import AuthProvider from '../components/AuthProvider.jsx';
 import { authApi } from '../services/authApi.js';
-vi.mock('../services/authApi.js', () => ({ authApi: { login: vi.fn(), me: vi.fn(), logout: vi.fn() } }));
+vi.mock('../services/authApi.js', () => ({ authApi: { me: vi.fn(), logout: vi.fn() } }));
 const auth = { authenticated: false, loading: false, refresh: vi.fn() };
 function view(element, value = auth, path = '/') {
   return render(<AuthContext.Provider value={value}><MemoryRouter initialEntries={[path]}><Routes>
@@ -15,19 +15,19 @@ function view(element, value = auth, path = '/') {
   </Routes></MemoryRouter></AuthContext.Provider>);
 }
 describe('authentication UI', () => {
-  it('renders login branding and initiates Google authorization', () => {
-    view(<Login />);
+  it('renders only student email login with no Google controls or branding', () => {
+    const { container } = view(<Login />);
     expect(screen.getByText('BRAC University')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'BRACU SMART TRANSPORT' })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Continue with BRACU Google' }));
-    expect(authApi.login).toHaveBeenCalledOnce();
-    expect(screen.getByRole('button', { name: 'Signing in...' })).toBeDisabled();
-    fireEvent.click(screen.getByRole('button', { name: 'Signing in...' }));
-    expect(authApi.login).toHaveBeenCalledOnce();
+    expect(screen.getByRole('textbox', { name: 'BRACU email' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Login', exact: true })).toBeEnabled();
+    expect(screen.getAllByRole('button')).toHaveLength(1);
+    expect(container).not.toHaveTextContent(/Google|Workspace|Signing in|Connecting to/i);
+    expect(container.querySelector('svg')).toBeNull();
   });
   it('redirects unauthenticated protected routes to login', () => {
     view(<ProtectedRoute><p>Private</p></ProtectedRoute>);
-    expect(screen.getByRole('button', { name: 'Continue with BRACU Google' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Login', exact: true })).toBeInTheDocument();
     expect(screen.queryByText('Private')).not.toBeInTheDocument();
   });
   it('allows authenticated users', () => {
@@ -40,7 +40,7 @@ describe('authentication UI', () => {
   });
   it('shows institutional failure clearly', () => {
     view(<Login />, auth, '/login?error=invalid_institution');
-    expect(screen.getByRole('alert')).toHaveTextContent('BRACU student Google Workspace');
+    expect(screen.getByRole('alert')).toHaveTextContent('BRACU email ending in @g.bracu.ac.bd');
   });
   it('surfaces service failures with retry', () => {
     view(<ProtectedRoute />, { ...auth, error: 'Unavailable' });

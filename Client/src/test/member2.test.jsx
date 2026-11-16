@@ -17,9 +17,9 @@ beforeEach(() => {
 });
 describe('Member 2 student pages', () => {
   it('integrates dashboard and navigation with the existing authenticated identity', () => {
-    render(<AuthContext.Provider value={{ user: { name: 'Student' }, logout: vi.fn() }}><MemoryRouter><Routes><Route element={<StudentLayout />}><Route path="/" element={<StudentDashboard />} /></Route></Routes></MemoryRouter></AuthContext.Provider>);
+    render(<AuthContext.Provider value={{ user: { name: 'Student', role:'student' }, logout: vi.fn() }}><MemoryRouter><Routes><Route element={<StudentLayout />}><Route path="/" element={<StudentDashboard />} /></Route></Routes></MemoryRouter></AuthContext.Provider>);
     expect(screen.getByRole('heading', { name: 'Student Dashboard' })).toBeInTheDocument();
-    expect(screen.getByRole('navigation', { name: 'Student navigation' })).toHaveTextContent('My Bookings');
+    expect(screen.getByRole('navigation', { name: 'Student navigation' })).toHaveTextContent('Booking History');
     expect(screen.getByRole('button', { name: 'Logout' })).toBeInTheDocument();
   });
   it('selects trip, seat and confirms booking with in-app success feedback', async () => {

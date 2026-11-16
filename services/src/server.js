@@ -3,17 +3,13 @@ import { fileURLToPath } from 'node:url';
 import { loadAuthConfig } from './config/auth.js';
 import { createPool } from './config/db.js';
 import { createApp } from './app.js';
-import { createTransportCatalog } from './services/transportCatalog.js';
-import { createTripCatalog } from './services/tripCatalog.js';
+import { createBookingTripCatalog } from './services/bookingTripCatalog.js';
 dotenv.config({ path: fileURLToPath(new URL('../../.env', import.meta.url)) });
 const config = loadAuthConfig();
-if (!config.clientId || !config.clientSecret) console.warn('Google sign-in is unavailable until local OAuth credentials are configured.');
+
 const pool = createPool(config);
 await pool.query('SELECT 1 FROM users LIMIT 1');
 await pool.query('SELECT 1 FROM auth_sessions LIMIT 1');
-await pool.query('SELECT 1 FROM transport_schedules LIMIT 1');
-const tripCatalog = process.env.TRANSPORT_CATALOG === 'legacy-json'
-  ? createTripCatalog(JSON.parse(process.env.MEMBER2_TRIPS_JSON || '[]'))
-  : createTransportCatalog(pool);
-const server = createApp({ config, pool, tripCatalog }).listen(Number(process.env.PORT || 3000), () => console.log('BRACU API listening'));
+const tripCatalog = createBookingTripCatalog(pool);
+const server = createApp({ config, pool, tripCatalog }).listen(Number(process.env.PORT || 3000), config.devDirectLogin ? '127.0.0.1' : undefined, () => console.log('BRACU API listening'));
 for (const signal of ['SIGTERM', 'SIGINT']) process.on(signal, () => server.close(async () => { await pool.end(); process.exit(0); }));
