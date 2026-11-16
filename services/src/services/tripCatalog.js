@@ -18,8 +18,8 @@ export function createTripCatalog(trips = []) {
 }
 
 export function createDatabaseTripCatalog(pool) {
- return {async list(date) {
-  const {rows}=await pool.query(`SELECT t.id::text, b.bus_number AS bus, r.route_name AS route,
+ return {async list(date, {db = pool} = {}) {
+  const {rows}=await db.query(`SELECT t.id::text, b.bus_number AS bus, r.route_name AS route,
    to_char(t.departure_time,'HH24:MI') AS "departureTime", b.capacity,
    COALESCE(b.standing_capacity,0) AS "standingCapacity"
    FROM trips t JOIN buses b ON b.id=t.bus_id JOIN routes r ON r.id=t.route_id

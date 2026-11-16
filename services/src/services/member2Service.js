@@ -9,9 +9,9 @@ function present(row, now) {
   return { ...row, travel_date: dateText(row.travel_date), section: row.status === 'cancelled' ? 'Cancelled' : new Date(row.departure_at) <= now ? 'Past' : 'Upcoming' };
 }
 export function createMember2Service({ pool, tripCatalog, clock = () => new Date() }) {
-  async function tripFor(id, date) {
+  async function tripFor(id, date, db = pool) {
     validDate(date);
-    const trip = (await tripCatalog.list(date)).find(t => t.id === id);
+    const trip = (await tripCatalog.list(date, { db })).find(t => t.id === id);
     if (!trip) throw new Member2Error('trip_not_found', 404);
     return trip;
   }
@@ -69,11 +69,12 @@ export function createMember2Service({ pool, tripCatalog, clock = () => new Date
       const { tripId, travelDate, seatNumber, standing = false } = input;
       if (typeof standing !== 'boolean') throw new Member2Error('invalid_standing');
       return transaction(async db => {
-        const trip = await tripFor(tripId, travelDate);
         // Consistent lock order: student first, then trip/date. Waiting writers
         // re-read availability/counts with READ COMMITTED after acquiring locks.
         const user = (await db.query('SELECT gender,gender_verified FROM users WHERE id=$1 FOR UPDATE', [studentId])).rows[0];
         if (!user) throw new Member2Error('unauthenticated', 401);
+        if (tripCatalog.lockForBooking) await tripCatalog.lockForBooking(db);
+        const trip = await tripFor(tripId, travelDate, db);
         await db.query('SELECT pg_advisory_xact_lock(hashtextextended($1, 0))', [`${tripId}:${travelDate}`]);
         if (!windowOpen(trip, travelDate, clock())) throw new Member2Error('booking_window_closed', 409);
         validateSeat(trip, user.gender_verified?user.gender:null, seatNumber, standing);
@@ -82,6 +83,13 @@ export function createMember2Service({ pool, tripCatalog, clock = () => new Date
         if (standing) {
           const n = (await db.query("SELECT count(*) FROM bookings WHERE trip_id=$1 AND travel_date=$2 AND standing AND status='confirmed'", [tripId, travelDate])).rows[0];
           if (Number(n.count) >= trip.standingCapacity) throw new Member2Error('standing_full', 409);
+        }
+        if (trip.requiresStops) {
+          const selection = await tripCatalog.bookingSelection(trip, input);
+          const snapshot = { ...trip, pickup: selection.pickup, dropoff: selection.dropoff };
+          const result = await db.query(`INSERT INTO bookings(student_id,trip_id,travel_date,departure_at,trip_snapshot,capacity,seat_number,standing,schedule_id,pickup_stop_id,dropoff_stop_id)
+            VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *`, [studentId,tripId,travelDate,departureAt(trip,travelDate),JSON.stringify(snapshot),trip.capacity,standing ? null : seatNumber,standing,trip.scheduleId,selection.pickup.id,selection.dropoff?.id || null]);
+          return present(result.rows[0], clock());
         }
         const result = await db.query(`INSERT INTO bookings(student_id,trip_id,travel_date,departure_at,trip_snapshot,capacity,seat_number,standing)
           VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`, [studentId, tripId, travelDate, departureAt(trip, travelDate), JSON.stringify(trip), trip.capacity, standing ? null : seatNumber, standing]);

@@ -2,7 +2,7 @@ import { attachDatabasePool } from '@vercel/functions';
 import { loadAuthConfig } from './config/auth.js';
 import { createPool } from './config/db.js';
 import { createApp } from './app.js';
-import { createDatabaseTripCatalog } from './services/tripCatalog.js';
+import { createBookingTripCatalog } from './services/bookingTripCatalog.js';
 
 export function createVercelHandler({ env = process.env, poolFactory = createPool,
   appFactory = createApp, managePool = attachDatabasePool } = {}) {
@@ -16,7 +16,7 @@ export function createVercelHandler({ env = process.env, poolFactory = createPoo
         const config = loadAuthConfig({ ...env, NODE_ENV: 'production', VERCEL: '1' });
         const pool = poolFactory(config);
         managePool(pool);
-        app = appFactory({ config, pool, tripCatalog: createDatabaseTripCatalog(pool) });
+        app = appFactory({ config, pool, tripCatalog: createBookingTripCatalog(pool, env) });
       } catch {
         // Configuration errors must not expose credentials or produce a platform HTML error.
         res.statusCode = 503;

@@ -1,4 +1,5 @@
 import {test} from 'node:test';
+import {readdir} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import request from 'supertest';
 import {testPool} from '../test-support/database.js';
@@ -128,7 +129,8 @@ test('Member 4 PostgreSQL workflows, ownership and integration',async t=>{
    await migrate(db);
    await assert.rejects(db.query("UPDATE complaints SET status='bad' WHERE id=$1",[complaintId]),{code:'23514'});
    await assert.rejects(db.query("INSERT INTO feedback(user_id,target,rating) VALUES('1','service',6)"),{code:'23514'});
-   assert.equal(Number((await db.query("SELECT count(*) FROM schema_migrations")).rows[0].count),8);
+   const migrations=(await readdir(new URL('../../database/migrations/',import.meta.url))).filter(name=>name.endsWith('.sql')).sort();
+   assert.deepEqual((await db.query("SELECT name FROM schema_migrations ORDER BY name")).rows.map(row=>row.name),migrations);
   });
  } finally {
   await db.query('SET search_path TO public');await db.query('DROP SCHEMA '+schema+' CASCADE');db.release();await pool.end();

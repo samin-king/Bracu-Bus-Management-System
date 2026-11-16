@@ -1,6 +1,5 @@
 # BRACU Bus Management System
 
-<<<<<<< HEAD
 The integrated API starts in `services/src/server.js`. It retains Member 1's verified email/session authentication and Member 2's student APIs, and mounts Member 3/4's transport modules from `server/src`. `server/src/index.js` delegates to the same authenticated entry point.
 
 ## Local use
@@ -27,7 +26,7 @@ No separate backend service or demo seed is required to start the API.
 
 All migrations are tracked under lowercase `database/migrations` for Windows/Linux compatibility. Both migration commands use the same transactional runner and migration ledger. The order is authentication, fleet/trips, drivers, email tokens, student booking/complaints, Member 4 extensions, then integration constraints. `003_member4.sql` extends the existing complaints table; it does not create a second complaint system. Member 2's API retains its existing status vocabulary while authority updates and notifications share those records.
 
-Booking uses scheduled database trips at its four supported departure times; other departures remain visible in transport management. Standing capacity defaults to zero and can be configured through the authority Buses form in the existing `buses.standing_capacity` column. Female reservation and standing use trusted server-side profile gender; see [booking priority and standing](docs/booking-priority-standing.md) for the local verification profiles and results. Existing booking snapshots and legacy string trip identifiers remain valid.
+Booking includes scheduled Member 3 database trips at its four supported departure times and verified, assigned official schedules. See [official schedule integration](docs/transport-schedule-integration.md) for catalog modes, source verification and setup. Other Member 3 departures remain visible in transport management. Standing capacity defaults to zero and can be configured through the authority Buses form in the existing `buses.standing_capacity` column. Female reservation and standing use trusted server-side profile gender; see [booking priority and standing](docs/booking-priority-standing.md) for the local verification profiles and results. Existing booking snapshots and legacy string trip identifiers remain valid.
 
 ## Verification
 
@@ -38,9 +37,8 @@ Booking uses scheduled database trips at its four supported departure times; oth
 - `TEST_REDIS_URL` enables the optional live Redis queue test.
 
 The existing BullMQ queue infrastructure is preserved. Its standalone worker still requires an injected `processBooking` implementation; the original worker does not process student bookings by itself. Student bookings use the tested synchronous authenticated API. No new public queue submission endpoint is introduced.
-=======
 Existing React frontend: `Client/`. Existing Express transport API: `server/`.
-Schema and seeds: `Database/`. See existing Member 3 documentation for
+Schema and seeds: `database/`. See existing Member 3 documentation for
 [bus/route/trip](docs/member3-part1-bus-route-trip.md),
 [drivers](docs/member3-part2-driver.md), and
 [Redis/queues](docs/member3-part3-redis-queue-worker.md).
@@ -269,4 +267,3 @@ Existing tracked files modified: none. Existing tracked files deleted:
 none. Backend, React, database and other members' work are unchanged. Flutter SDK
 was downloaded to ignored `.local/flutter` for verification; SDK/build caches
 are excluded from the contribution. No commit or push was performed.
->>>>>>> origin/flutter-member3-transport
