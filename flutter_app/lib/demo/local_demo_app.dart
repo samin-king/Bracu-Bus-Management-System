@@ -26,6 +26,7 @@ class LocalDemoApp extends StatefulWidget {
 
 class _DemoAppState extends State<LocalDemoApp> {
   final store = DemoStore();
+  final messengerKey = GlobalKey<ScaffoldMessengerState>();
   TransportRole? role;
   ApiClient? api;
   String selected = 'Dashboard';
@@ -80,6 +81,7 @@ class _DemoAppState extends State<LocalDemoApp> {
     null => [],
   };
   void login(TransportRole value) => setState(() {
+    messengerKey.currentState?.clearSnackBars();
     api?.client.close();
     role = value;
     api = store.api(value);
@@ -87,6 +89,7 @@ class _DemoAppState extends State<LocalDemoApp> {
     store.setViewState('Normal');
   });
   void logout() => setState(() {
+    messengerKey.currentState?.clearSnackBars();
     store.setViewState('Normal');
     role = null;
     selected = 'Dashboard';
@@ -151,12 +154,20 @@ class _DemoAppState extends State<LocalDemoApp> {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    title: 'BRACU Transport ? Local Demo',
+    title: 'BRACU Transport — Local Demo',
+    scaffoldMessengerKey: messengerKey,
     theme: TransportTheme.light,
     home: PremiumDemoShell(
-      role: role, modules: modules, selected: selected, viewState: store.viewState,
-      navigationKey: '${role?.name}-$selected-${store.viewState}-$navigationVersion',
-      content: (_) => module(), login: login, logout: logout, openModule: openModule,
+      role: role,
+      modules: modules,
+      selected: selected,
+      viewState: store.viewState,
+      navigationKey:
+          '${role?.name}-$selected-${store.viewState}-$navigationVersion',
+      content: (_) => module(),
+      login: login,
+      logout: logout,
+      openModule: openModule,
       changeViewState: (state) => setState(() => store.setViewState(state)),
     ),
   );

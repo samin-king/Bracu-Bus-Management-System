@@ -7,6 +7,8 @@ import '../widgets/async_body.dart';
 import '../widgets/record_card.dart';
 import '../widgets/role_gate.dart';
 import 'record_form.dart';
+import '../design/premium_record_table.dart';
+import '../design/transport_theme.dart';
 
 class ManagementScreen<T extends TransportRecord> extends StatelessWidget {
   const ManagementScreen({
@@ -160,26 +162,40 @@ class _ManagementBodyState<T extends TransportRecord>
   );
 
   Widget recordList(List<T> items) => items.isEmpty
-      ? Center(child: Text('No ${widget.title.toLowerCase()} found.'))
-      : ListView.builder(
-          padding: const EdgeInsets.fromLTRB(12, 12, 12, 100),
-          itemCount: items.length,
-          itemBuilder: (_, i) => RecordCard(
-            record: items[i],
-            onTap: () async {
-              await Navigator.of(context).push<bool>(
-                MaterialPageRoute(
-                  builder: (_) => RecordDetail<T>(
-                    service: widget.service,
-                    id: items[i].id,
-                    kind: widget.kind,
+      ? PolishedState(
+          title: 'Nothing here just yet',
+          message: 'No ${widget.title.toLowerCase()} found.',
+          icon: Icons.search_off_rounded,
+        )
+      : LayoutBuilder(
+          builder: (context, bounds) =>
+              widget.enableTools && bounds.maxWidth > 900
+              ? PremiumRecordTable<T>(
+                  items: items,
+                  kind: widget.kind,
+                  open: openRecord,
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 100),
+                  itemCount: items.length,
+                  itemBuilder: (_, i) => RecordCard(
+                    record: items[i],
+                    onTap: () => openRecord(items[i]),
                   ),
                 ),
-              );
-              if (mounted) reload();
-            },
-          ),
         );
+  Future<void> openRecord(T item) async {
+    await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => RecordDetail<T>(
+          service: widget.service,
+          id: item.id,
+          kind: widget.kind,
+        ),
+      ),
+    );
+    if (mounted) reload();
+  }
 }
 
 class RecordDetail<T extends TransportRecord> extends StatefulWidget {

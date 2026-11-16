@@ -5,9 +5,12 @@ import 'demo_store.dart';
 import '../design/transport_theme.dart';
 import '../design/premium_dashboard.dart';
 
-void demoNotice(BuildContext context, String message) => ScaffoldMessenger.of(
-  context,
-).showSnackBar(SnackBar(content: Text(message)));
+void demoNotice(BuildContext context, String message) {
+  ScaffoldMessenger.of(context)
+    ..clearSnackBars()
+    ..showSnackBar(SnackBar(content: Text(message)));
+}
+
 void demoAction(BuildContext context, VoidCallback action, String message) {
   try {
     action();
@@ -60,24 +63,39 @@ class _DemoPageState extends State<DemoPage> {
         future: future,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(
+            return const Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('${snapshot.error}'),
-                  FilledButton(onPressed: reload, child: const Text('Retry')),
+                  CircularProgressIndicator(strokeWidth: 2.5),
+                  SizedBox(height: 18),
+                  Text(
+                    'Preparing your workspace…',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: TransportColors.muted,
+                    ),
+                  ),
                 ],
               ),
             );
           }
-          if (widget.store.viewState == 'Empty') {
-            return const Center(
-              child: Text(
-                'No demo records found. Choose Normal to restore the demonstration.',
+          if (snapshot.hasError) {
+            return PolishedState(
+              title: 'Let’s try that again',
+              message: '${snapshot.error}',
+              icon: Icons.cloud_off_outlined,
+              action: FilledButton(
+                onPressed: reload,
+                child: const Text('Retry'),
               ),
+            );
+          }
+          if (widget.store.viewState == 'Empty') {
+            return const PolishedState(
+              title: 'A fresh start',
+              message:
+                  'No demo records found. Choose Normal to restore the demonstration.',
             );
           }
           return AnimatedBuilder(
@@ -91,14 +109,22 @@ class _DemoPageState extends State<DemoPage> {
 }
 
 class DemoDashboard extends StatelessWidget {
-  const DemoDashboard({super.key, required this.store, required this.role, required this.open});
+  const DemoDashboard({
+    super.key,
+    required this.store,
+    required this.role,
+    required this.open,
+  });
   final DemoStore store;
   final TransportRole role;
   final ValueChanged<String> open;
   @override
-  Widget build(BuildContext context) => DemoPage(store: store,
+  Widget build(BuildContext context) => DemoPage(
+    store: store,
     title: '${role.name[0].toUpperCase()}${role.name.substring(1)} Dashboard',
-    builder: (_) => PremiumDashboardContent(store:store, role:role, open:open));
+    builder: (_) =>
+        PremiumDashboardContent(store: store, role: role, open: open),
+  );
 }
 
 class DemoStudentProfile extends StatelessWidget {
@@ -207,20 +233,71 @@ Widget _recordCard(
   List<Widget> actions = const [],
 }) => Card(
   child: Padding(
-    padding: const EdgeInsets.all(16),
+    padding: const EdgeInsets.all(24),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          title,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xffeef3ff),
+                borderRadius: BorderRadius.circular(11),
+              ),
+              child: Icon(
+                details.containsKey('Role')
+                    ? Icons.school_outlined
+                    : details.containsKey('License')
+                    ? Icons.badge_outlined
+                    : details.containsKey('Audience')
+                    ? Icons.notifications_none_rounded
+                    : Icons.article_outlined,
+                color: TransportColors.blue,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 13),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 7),
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -.4,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 8),
+        if (details['Status'] != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 15),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: StatusBadge('${details['Status']}'),
+            ),
+          ),
+        const SizedBox(height: 20),
+        const Divider(height: 1),
+        const SizedBox(height: 17),
         for (final entry in details.entries)
           Padding(
-            padding: const EdgeInsets.only(bottom: 7),
-            child: Text('${entry.key}: ${entry.value}'),
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Text(
+              '${entry.key}: ${entry.value}',
+              style: const TextStyle(
+                fontSize: 12,
+                height: 1.7,
+                color: Color(0xff60718a),
+              ),
+            ),
           ),
+        const SizedBox(height: 6),
         ...actions,
       ],
     ),

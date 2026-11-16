@@ -1,5 +1,8 @@
 # BRACU Transport — interactive Local Demo Mode
 
+For the current navy/blue redesign and updated screenshots, see
+[UI redesign report](UI_REDESIGN_REPORT.md). The walkthrough below still applies.
+
 Open **http://127.0.0.1:8191/** and choose **Demo Student**, **Demo Driver**, or
 **Demo Authority**. No Google account or password is needed for this mode.
 

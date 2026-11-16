@@ -12,16 +12,20 @@ void main() {
   testWidgets('selecting the same Authority module leaves its detail route', (
     tester,
   ) async {
+    tester.view.physicalSize = const Size(1300, 950);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(const LocalDemoApp());
     await tester.pumpAndSettle();
     await tester.tap(find.text('Demo Authority'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Bus Management'));
+    await tester.tap(find.widgetWithText(ListTile, 'Bus Management'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('View details').first);
     await tester.pumpAndSettle();
     expect(find.text('bus details'), findsOneWidget);
-    await tester.tap(find.text('Bus Management'));
+    await tester.tap(find.widgetWithText(ListTile, 'Bus Management'));
     await tester.pumpAndSettle();
     expect(find.widgetWithText(TextField, 'Search buses'), findsOneWidget);
     expect(find.text('bus details'), findsNothing);
@@ -111,7 +115,7 @@ void main() {
     await tester.tap(find.text('Demo Student'));
     await tester.pumpAndSettle();
     expect(find.textContaining('DEMO MODE'), findsOneWidget);
-    await tester.tap(find.text('Student Profile'));
+    await tester.tap(find.widgetWithText(ListTile, 'Student Profile'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Edit profile'));
     await tester.pumpAndSettle();
@@ -120,13 +124,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('DEMO-01777777777'), findsOneWidget);
     expect(tester.takeException(), isNull);
-    await tester.tap(find.text('Bus Booking'));
+    await tester.tap(find.widgetWithText(ListTile, 'Bus Booking'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Book trip #1'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Confirm booking'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Booking History'));
+    await tester.tap(find.widgetWithText(ListTile, 'Booking History'));
     await tester.pumpAndSettle();
     expect(find.textContaining('Booking DEMO-3'), findsOneWidget);
     await tester.tap(find.text('Logout'));
@@ -134,7 +138,7 @@ void main() {
     expect(find.text('Local Demo Login'), findsOneWidget);
     await tester.tap(find.text('Demo Driver'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Passenger List'));
+    await tester.tap(find.widgetWithText(ListTile, 'Passenger List'));
     await tester.pumpAndSettle();
     expect(find.text('Ayesha Rahman'), findsOneWidget);
     expect(tester.takeException(), isNull);

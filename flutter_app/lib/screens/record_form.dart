@@ -21,10 +21,10 @@ class RecordForm<T extends TransportRecord> extends StatelessWidget {
   final T? item;
   @override
   Widget build(BuildContext context) => RoleGate(
-        api: service.api,
-        role: TransportRole.authority,
-        builder: (_) => _FormBody<T>(service: service, kind: kind, item: item),
-      );
+    api: service.api,
+    role: TransportRole.authority,
+    builder: (_) => _FormBody<T>(service: service, kind: kind, item: item),
+  );
 }
 
 class _FormBody<T extends TransportRecord> extends StatefulWidget {
@@ -49,36 +49,37 @@ class _FormBodyState<T extends TransportRecord> extends State<_FormBody<T>> {
       (widget.item as Trip).driverId != null &&
       ['ACTIVE', 'COMPLETED', 'STOPPED'].contains(widget.item!.status);
   Map<String, String> get fields => switch (widget.kind) {
-        'bus' => {
-            'bus_number': 'Bus number',
-            'registration_number': 'Registration number (optional)',
-            'capacity': 'Capacity',
-          },
-        'route' => {
-            'route_name': 'Route name',
-            'origin': 'Origin',
-            'destination': 'Destination',
-            'stops': 'Stops (one per line, optional)',
-          },
-        'driver' => {'name': 'Name', 'license_number': 'License number'},
-        _ => {
-            'bus_id': 'Bus',
-            'route_id': 'Route',
-            'travel_date': 'Travel date (YYYY-MM-DD, Dhaka)',
-            'departure_time': 'Departure time (HH:mm, Dhaka)',
-          },
-      };
+    'bus' => {
+      'bus_number': 'Bus number',
+      'registration_number': 'Registration number (optional)',
+      'capacity': 'Capacity',
+    },
+    'route' => {
+      'route_name': 'Route name',
+      'origin': 'Origin',
+      'destination': 'Destination',
+      'stops': 'Stops (one per line, optional)',
+    },
+    'driver' => {'name': 'Name', 'license_number': 'License number'},
+    _ => {
+      'bus_id': 'Bus',
+      'route_id': 'Route',
+      'travel_date': 'Travel date (YYYY-MM-DD, Dhaka)',
+      'departure_time': 'Departure time (HH:mm, Dhaka)',
+    },
+  };
   List<String> get statuses => switch (widget.kind) {
-        'bus' => ['ACTIVE', 'INACTIVE', 'MAINTENANCE'],
-        'driver' => ['ACTIVE', 'INACTIVE'],
-        'trip' => ['SCHEDULED', 'ACTIVE', 'STOPPED', 'COMPLETED', 'CANCELLED'],
-        _ => [],
-      };
+    'bus' => ['ACTIVE', 'INACTIVE', 'MAINTENANCE'],
+    'driver' => ['ACTIVE', 'INACTIVE'],
+    'trip' => ['SCHEDULED', 'ACTIVE', 'STOPPED', 'COMPLETED', 'CANCELLED'],
+    _ => [],
+  };
   @override
   void initState() {
     super.initState();
     final data = widget.item?.writable ?? {};
-    status = data['status'] as String? ??
+    status =
+        data['status'] as String? ??
         (widget.kind == 'trip' ? 'SCHEDULED' : 'ACTIVE');
     for (final name in fields.keys) {
       final value = data[name];
@@ -111,8 +112,10 @@ class _FormBodyState<T extends TransportRecord> extends State<_FormBody<T>> {
     final value = raw?.trim() ?? '';
     if (name == 'registration_number' && value.isEmpty) return null;
     if (name == 'stops') {
-      final stops =
-          value.split('\n').map((s) => s.trim()).where((s) => s.isNotEmpty);
+      final stops = value
+          .split('\n')
+          .map((s) => s.trim())
+          .where((s) => s.isNotEmpty);
       return stops.length > 100 || stops.any((s) => s.length > 250)
           ? 'Use at most 100 stops, each at most 250 characters.'
           : null;
@@ -165,8 +168,9 @@ class _FormBodyState<T extends TransportRecord> extends State<_FormBody<T>> {
     try {
       await widget.service.save(body, id: widget.item?.id);
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Saved successfully')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Saved successfully')));
       Navigator.pop(context, true);
     } catch (e) {
       if (mounted) setState(() => error = '$e');
@@ -177,19 +181,21 @@ class _FormBodyState<T extends TransportRecord> extends State<_FormBody<T>> {
 
   @override
   Widget build(BuildContext context) => PopScope(
-        canPop: !busy,
-        child: Scaffold(
-          appBar: AppBar(
-            title:
-                Text('${widget.item == null ? 'Add' : 'Edit'} ${widget.kind}'),
-          ),
-          body: SafeArea(
-            child: AsyncBody<void>(
-              future: dependencies,
-              retry: () => setState(() {
-                dependencies = loadChoices();
-              }),
-              builder: (_) => Form(
+    canPop: !busy,
+    child: Scaffold(
+      appBar: AppBar(
+        title: Text('${widget.item == null ? 'Add' : 'Edit'} ${widget.kind}'),
+      ),
+      body: SafeArea(
+        child: AsyncBody<void>(
+          future: dependencies,
+          retry: () => setState(() {
+            dependencies = loadChoices();
+          }),
+          builder: (_) => Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 780),
+              child: Form(
                 key: key,
                 child: ListView(
                   padding: const EdgeInsets.all(20),
@@ -204,15 +210,16 @@ class _FormBodyState<T extends TransportRecord> extends State<_FormBody<T>> {
                         child: choices.containsKey(field.key)
                             ? DropdownButtonFormField<String>(
                                 isExpanded: true,
-                                initialValue: choices[field.key]!.containsKey(
-                                  controllers[field.key]!.text,
-                                )
+                                initialValue:
+                                    choices[field.key]!.containsKey(
+                                      controllers[field.key]!.text,
+                                    )
                                     ? controllers[field.key]!.text
                                     : null,
-                                decoration:
-                                    InputDecoration(labelText: field.value),
-                                items: choices[field.key]!
-                                    .entries
+                                decoration: InputDecoration(
+                                  labelText: field.value,
+                                ),
+                                items: choices[field.key]!.entries
                                     .map(
                                       (e) => DropdownMenuItem(
                                         value: e.key,
@@ -225,8 +232,8 @@ class _FormBodyState<T extends TransportRecord> extends State<_FormBody<T>> {
                                     .toList(),
                                 onChanged: busy || historical
                                     ? null
-                                    : (v) =>
-                                        controllers[field.key]!.text = v ?? '',
+                                    : (v) => controllers[field.key]!.text =
+                                          v ?? '',
                                 validator: (v) => validate(field.key, v),
                               )
                             : TextFormField(
@@ -248,10 +255,12 @@ class _FormBodyState<T extends TransportRecord> extends State<_FormBody<T>> {
                         initialValue: status,
                         decoration: const InputDecoration(labelText: 'Status'),
                         items: statuses
-                            .map((s) =>
-                                DropdownMenuItem(value: s, child: Text(s)))
+                            .map(
+                              (s) => DropdownMenuItem(value: s, child: Text(s)),
+                            )
                             .toList(),
-                        onChanged: busy ||
+                        onChanged:
+                            busy ||
                                 (widget.item is Trip &&
                                     (widget.item as Trip).driverId != null)
                             ? null
@@ -278,5 +287,7 @@ class _FormBodyState<T extends TransportRecord> extends State<_FormBody<T>> {
             ),
           ),
         ),
-      );
+      ),
+    ),
+  );
 }

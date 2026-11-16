@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../design/transport_theme.dart';
 
 class AsyncBody<T> extends StatelessWidget {
   const AsyncBody({
@@ -12,31 +13,32 @@ class AsyncBody<T> extends StatelessWidget {
   final Widget Function(T) builder;
   @override
   Widget build(BuildContext context) => FutureBuilder<T>(
-        future: future,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '${snapshot.error}',
-                      style:
-                          TextStyle(color: Theme.of(context).colorScheme.error),
-                    ),
-                    const SizedBox(height: 16),
-                    FilledButton(onPressed: retry, child: const Text('Retry')),
-                  ],
-                ),
+    future: future,
+    builder: (context, snapshot) {
+      if (snapshot.connectionState != ConnectionState.done) {
+        return const Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(strokeWidth: 2.5),
+              SizedBox(height: 18),
+              Text(
+                'Preparing your workspace…',
+                style: TextStyle(fontSize: 11, color: TransportColors.muted),
               ),
-            );
-          }
-          return builder(snapshot.data as T);
-        },
-      );
+            ],
+          ),
+        );
+      }
+      if (snapshot.hasError) {
+        return PolishedState(
+          title: 'Let’s try that again',
+          message: '${snapshot.error}',
+          icon: Icons.cloud_off_outlined,
+          action: FilledButton(onPressed: retry, child: const Text('Retry')),
+        );
+      }
+      return builder(snapshot.data as T);
+    },
+  );
 }

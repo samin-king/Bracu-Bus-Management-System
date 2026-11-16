@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'services/api_client.dart';
 import 'auth/authenticated_host.dart';
 import 'demo/local_demo_app.dart';
+import 'design/transport_theme.dart';
 import 'screens/bus/bus_screen.dart';
 import 'screens/routes/route_screen.dart';
 import 'screens/trips/trip_screen.dart';
@@ -64,10 +65,7 @@ class _TransportAppState extends State<TransportApp> {
     return MaterialApp(
       key: ObjectKey(widget.session),
       title: 'BRACU Transport',
-      theme: ThemeData(
-        colorSchemeSeed: const Color(0xff123b72),
-        useMaterial3: true,
-      ),
+      theme: TransportTheme.light,
       home: Builder(
         builder: (context) => Scaffold(
           appBar: AppBar(

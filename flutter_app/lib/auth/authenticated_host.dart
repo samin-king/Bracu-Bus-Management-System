@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../main.dart';
 import '../services/api_client.dart';
 import 'platform_client.dart';
+import '../design/transport_theme.dart';
 
 /// The HttpOnly cookie stays in the browser. Roles are read from the server.
 class AuthenticatedTransportHost extends StatefulWidget {
@@ -136,10 +137,7 @@ class _HostState extends State<AuthenticatedTransportHost> {
     }
     return MaterialApp(
       title: 'BRACU Transport',
-      theme: ThemeData(
-        colorSchemeSeed: const Color(0xff123b72),
-        useMaterial3: true,
-      ),
+      theme: TransportTheme.light,
       home: Scaffold(
         appBar: AppBar(title: const Text('BRACU Transport')),
         body: Center(
