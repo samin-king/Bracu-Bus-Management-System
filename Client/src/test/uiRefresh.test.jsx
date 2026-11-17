@@ -1,3 +1,5 @@
+import {transportApi} from '../services/transportApi.js';
+vi.mock('../services/transportApi.js',()=>({transportApi:{routes:vi.fn(),schedules:vi.fn(),pattern:vi.fn()}}));
 import React,{useState} from 'react';
 import {beforeEach,it,expect,vi} from 'vitest';
 import {render,screen,fireEvent,waitFor} from '@testing-library/react';
@@ -19,7 +21,7 @@ const student={id:1,name:'Student',role:'student'};
 const trip={id:'1',bus:'BRACU-01',route:'Campus route',departureTime:'14:00',capacity:37,bookingOpen:true};
 const seatData={trip,bookingOpen:true,genderKnown:true,standingEligible:true,standingAvailable:2,seats:Array.from({length:37},(_,i)=>({number:i+1,reserved:i<18,state:i===19?'Booked':i<18?'Reserved':'Available',selectable:i>=18&&i!==19}))};
 function wrapper(ui){return render(<AuthContext.Provider value={{user:student}}><MemoryRouter>{ui}</MemoryRouter></AuthContext.Provider>);}
-beforeEach(()=>{vi.resetAllMocks();member2Api.bookings.mockResolvedValue([]);member2Api.complaints.mockResolvedValue([]);member2Api.trips.mockResolvedValue([trip]);member2Api.seats.mockResolvedValue(seatData);member4Api.notifications.mockResolvedValue([]);member4Api.complaints.mockResolvedValue([]);member4Api.feedback.mockResolvedValue([]);tripApi.list.mockResolvedValue([]);});
+beforeEach(()=>{vi.resetAllMocks();transportApi.routes.mockResolvedValue([]);member2Api.bookings.mockResolvedValue([]);member2Api.complaints.mockResolvedValue([]);member2Api.trips.mockResolvedValue([trip]);member2Api.seats.mockResolvedValue(seatData);member4Api.notifications.mockResolvedValue([]);member4Api.complaints.mockResolvedValue([]);member4Api.feedback.mockResolvedValue([]);tripApi.list.mockResolvedValue([]);});
 it('uses backend seat capacity and numeric IDs with lettered rows and a center aisle',()=>{
  const select=vi.fn();render(<SeatMap data={seatData} selected={null} busy={false} onSelect={select}/>);
  expect(screen.getByLabelText('Seat map').querySelectorAll('button')).toHaveLength(37);

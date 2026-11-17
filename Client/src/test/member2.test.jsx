@@ -1,3 +1,5 @@
+import {transportApi} from '../services/transportApi.js';
+vi.mock('../services/transportApi.js',()=>({transportApi:{routes:vi.fn(),schedules:vi.fn(),pattern:vi.fn()}}));
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -11,7 +13,7 @@ const booking = { id: '10', trip_id: 't1', trip_snapshot: trip, travel_date: '20
 const complaint = { id: '8', category: 'Late bus', subject: 'Late departure', description: 'Departed late', status: 'Pending', created_at: '2030-01-02T05:00:00Z' };
 function view(component, path = '/') { return render(<MemoryRouter initialEntries={[path]}><Routes><Route path="/" element={component} /><Route path="/bookings/:id" element={<BookingDetails />} /><Route path="/complaints/:id" element={<ComplaintDetails />} /></Routes></MemoryRouter>); }
 beforeEach(() => {
-  vi.resetAllMocks(); api.trips.mockResolvedValue([trip]); api.bookings.mockResolvedValue([]); api.complaints.mockResolvedValue([]);
+  vi.resetAllMocks(); transportApi.routes.mockResolvedValue([]); api.trips.mockResolvedValue([trip]); api.bookings.mockResolvedValue([]); api.complaints.mockResolvedValue([]);
   api.seats.mockResolvedValue({ trip, bookingOpen: true, genderKnown: true, standingAvailable: 0, seats: [{ number: 1, state: 'Reserved', selectable: false }, { number: 19, state: 'Available', selectable: true }, { number: 20, state: 'Booked', selectable: false }] });
   api.book.mockResolvedValue(booking); api.booking.mockResolvedValue(booking); api.complaint.mockResolvedValue(complaint); api.cancel.mockResolvedValue({ ...booking, status: 'cancelled' }); api.complain.mockResolvedValue(complaint);
 });
@@ -24,7 +26,7 @@ describe('Member 2 student pages', () => {
   });
   it('selects trip, seat and confirms booking with in-app success feedback', async () => {
     view(<BookBus />);
-    expect(screen.getByLabelText('Travel date')).toBeInTheDocument();
+    expect(await screen.findByLabelText('Travel date')).toBeInTheDocument();
     fireEvent.click(await screen.findByRole('button', { name: /Bus A/ }));
     expect(await screen.findByRole('button', { name: 'Seat 1 Reserved' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Seat 20 Booked' })).toBeDisabled();

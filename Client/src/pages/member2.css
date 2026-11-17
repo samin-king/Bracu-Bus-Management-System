@@ -37,3 +37,19 @@
 .welcome-banner-photo p { color:#e1e9f5; max-width:340px; font-size:12px; }
 .welcome-banner-photo .primary-link { color:#102b50; }
 @media(max-width:650px) { .welcome-banner.welcome-banner-photo { min-height:330px; } .welcome-banner-photo .welcome-banner-copy { padding:30px 24px; } .welcome-banner-photo h2 { font-size:32px; } .welcome-banner-photo .welcome-banner-image img { object-position:60% center; } .welcome-banner-photo::after { background:linear-gradient(90deg,rgba(12,38,75,.94),rgba(12,38,75,.65) 65%,rgba(12,38,75,.3)); } }
+/* Official transport schedule and stoppage booking. */
+.member2 .schedule-filters {display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-bottom:24px}
+.member2 .schedule-filters label {display:flex;flex-direction:column;gap:8px;margin:0;font-size:12px;font-weight:650}
+.member2 .schedule-filters input,.member2 .schedule-filters select {width:100%;min-height:46px;background:white;border:1px solid var(--line);border-radius:9px;padding:10px 12px;font:inherit}
+.schedule-route-grid,.schedule-trip-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin:18px 0 28px}
+.member2 .schedule-route-grid>button,.member2 .schedule-trip {display:flex;flex-direction:column;gap:10px;align-items:flex-start;text-align:left;background:white;border:1px solid var(--line);border-radius:14px;padding:20px;white-space:normal;color:var(--ink)}
+.member2 .schedule-route-grid strong {font-size:17px}
+.member2 .schedule-route-grid button>span:last-child {font-size:11px;color:var(--maroon)}
+.member2 .schedule-trip>strong {font-size:22px}.member2 .schedule-trip>strong span {font-size:13px;font-weight:500}
+.member2 .schedule-trip[aria-pressed=true] {border-color:var(--maroon);box-shadow:0 0 0 2px var(--maroon);background:#fff8fb}
+.member2 .schedule-trip small {color:var(--muted)}
+.member2 .schedule-stops,.member2 .schedule-review {background:white;border:1px solid var(--line);border-radius:15px;padding:24px;margin:24px 0}
+.schedule-timeline {list-style:none;margin:0;padding:0}.schedule-timeline li {position:relative;display:grid;grid-template-columns:1fr auto;gap:5px 14px;padding:13px 15px 13px 28px;border-left:2px solid #e4d5dd}
+.schedule-timeline li:before {content:'';position:absolute;left:-5px;top:18px;height:8px;width:8px;background:#bc91a5;border-radius:50%}.schedule-timeline small {grid-column:2;color:var(--muted);font-size:10px}.schedule-timeline .selected-stop {background:#fff3f8;border-left-color:var(--maroon)}
+.member2 .schedule-review>button {margin:8px 12px 0 0}
+@media(max-width:600px){.member2 .schedule-filters{grid-template-columns:1fr}.member2 .schedule-stops,.member2 .schedule-review{padding:17px}.schedule-route-grid,.schedule-trip-grid{grid-template-columns:1fr}.schedule-timeline li{font-size:12px;min-width:0}.schedule-timeline li>span{overflow-wrap:anywhere}}
