@@ -39,7 +39,7 @@ export function createGoogleProvider(config) {
     }
   };
 }
-export function createAuthService({ pool, provider, config }) {
+export function createAuthService({ pool, provider, config, accountDirectory }) {
   return {
     begin() {
       const flow = { state: randomToken(), nonce: randomToken(), verifier: randomToken(), createdAt: Date.now() };
@@ -54,6 +54,9 @@ export function createAuthService({ pool, provider, config }) {
       catch { throw new AuthError('google_failed'); }
       if (!equalToken(claims?.nonce, flow.nonce)) throw new AuthError('invalid_callback', 400);
       const identity = validateIdentity(claims, config);
+      // Integrated hosts may require pre-authorized accounts while reusing this
+      // exact OAuth verification flow. Never accept identity or roles from UI.
+      if (accountDirectory) return accountDirectory.authenticate(identity);
       try {
         const result = await pool.query(`INSERT INTO users (google_subject, name, email, role)
           VALUES ($1, $2, $3, 'student') ON CONFLICT (google_subject) DO UPDATE
@@ -67,6 +70,7 @@ export function createAuthService({ pool, provider, config }) {
       }
     },
     async findUser(id) {
+      if (accountDirectory) return accountDirectory.findUser(id);
       const result = await pool.query("SELECT id, name, email, role FROM users WHERE id = $1 AND role = 'student'", [id]);
       return result.rows[0] || null;
     }
