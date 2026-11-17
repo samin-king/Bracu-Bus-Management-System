@@ -3,3 +3,7 @@ dist/
 .env
 coverage/
 .local/
+.env.*
+!.env.example
+hs_err_pid*.log
+replay_pid*.log

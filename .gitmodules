@@ -1,0 +1,4 @@
+[submodule "Bracu-Bus-Management-System"]
+	path = Bracu-Bus-Management-System
+	url = https://github.com/samin-king/Bracu-Bus-Management-System.git
+	branch = integration/member1-account-directory
