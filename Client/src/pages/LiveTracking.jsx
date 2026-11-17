@@ -1,18 +1,69 @@
-import React,{useEffect,useState} from 'react';
-import {tripApi} from '../services/tripApi.js';
-import {Badge,EmptyState,Icon,Loading,PageHeading,formatTime} from '../components/Ui.jsx';
+import React,{useEffect,useMemo,useRef,useState} from 'react';
+import {transportApi} from '../services/transportApi.js';
+import {roadRoute} from '../services/mapRouting.js';
+import {CAMPUS,formatDistance,locateStop,normalizeLocation} from '../utils/transportGeo.js';
+import TransportMap from '../components/TransportMap.jsx';
+import {EmptyState,Icon,Loading,PageHeading,useResource} from '../components/Ui.jsx';
 export default function LiveTracking(){
- const [trips,setTrips]=useState([]),[selected,setSelected]=useState(''),[loading,setLoading]=useState(true),[error,setError]=useState(''),[updated,setUpdated]=useState(null),[tick,setTick]=useState(0);
- async function load(){try{const data=await tripApi.list();setTrips(data);setSelected(current=>data.some(t=>String(t.id)===current)?current:String((data.find(t=>t.status==='ACTIVE')||data[0])?.id||''));setUpdated(new Date());setError('');}catch(e){setError(e.message);}finally{setLoading(false);}}
- useEffect(()=>{load();const poll=setInterval(load,30000),animation=setInterval(()=>setTick(t=>t+1),2000);return()=>{clearInterval(poll);clearInterval(animation);};},[]);
- const trip=trips.find(t=>String(t.id)===selected),stale=updated&&Date.now()-updated.getTime()>60000;
- const progress=trip?.status==='COMPLETED'?1:trip?.status==='ACTIVE'?(tick%20)/20:0;
- const points=[[100,320],[210,250],[310,250],[400,140],[540,90]],segment=Math.min(3,Math.floor(progress*4)),fraction=progress*4-segment;
- const marker=[points[segment][0]+(points[segment+1][0]-points[segment][0])*fraction,points[segment][1]+(points[segment+1][1]-points[segment][1])*fraction];
- const stops=trip?.route?.stops||[],label=stale?'STALE':trip?.status||'SCHEDULED';
- return <><PageHeading title="Live Bus Tracking" eyebrow="YOUR ROUTE, AT A GLANCE" action={<button onClick={load}><Icon name="history" size={17}/>Refresh status</button>}>Follow trip status and explore your campus bus routes.</PageHeading>
- <div className="tracking-disclaimer"><Icon name="map"/><span><strong>Demo route view</strong> · Positions are illustrative; active-bus movement is simulated. Trip status, route and driver details come from the transport API. GPS coordinates are not available.</span></div>
- {error&&<p role="alert" className="m2-error">{error} <button onClick={load}>Retry</button></p>}
- {loading?<Loading>Loading transport routes...</Loading>:!trips.length?<EmptyState icon="map" title="No trips to track">Scheduled transport will appear when trips are published.</EmptyState>:<div className="tracking-layout"><section className="tracking-map-card"><div className="map-toolbar"><div><span className="eyebrow">ROUTE OVERVIEW</span><h2>{trip?.route?.route_name||'Select a trip'}</h2></div><Badge status={label}/></div><div className="route-map" aria-label="Illustrative route map"><svg viewBox="0 0 640 420" role="img" aria-label="Demo bus route between stops"><defs><pattern id="map-grid" width="55" height="55" patternUnits="userSpaceOnUse"><path d="M55 0H0V55" fill="none" stroke="#e2e7df" strokeWidth="1"/></pattern></defs><rect width="640" height="420" fill="#f1f4ee"/><rect width="640" height="420" fill="url(#map-grid)"/><path d="M-30 340 700 35M40-30 350 470M-20 95 640 310" stroke="white" strokeWidth="23"/><path d="M450-20q-100 160 30 450" fill="none" stroke="#d5e7ee" strokeWidth="32"/><path d="M100 320 210 250 310 250 400 140 540 90" fill="none" stroke="#fff" strokeWidth="16" strokeLinejoin="round"/><path d="M100 320 210 250 310 250 400 140 540 90" fill="none" stroke="#80283f" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"/>{[[100,320],[210,250],[310,250],[400,140],[540,90]].map(([x,y],i)=><g key={i}><circle cx={x} cy={y} r="9" fill="white" stroke="#80283f" strokeWidth="3"/></g>)}<text x="74" y="356" fill="#46534b" fontSize="14">{trip?.route?.origin||'Origin'}</text><text x="460" y="61" fill="#46534b" fontSize="14">{trip?.route?.destination||'Campus'}</text><g transform={`translate(${marker[0]},${marker[1]})`}><circle r="23" fill="#80283f" stroke="white" strokeWidth="5"/><text textAnchor="middle" y="5" fontSize="13" fill="white">BUS</text></g></svg><span className="map-watermark">ILLUSTRATIVE MAP · NOT GPS</span></div><div className="map-footer"><span><i className="unread-dot"/> {stale?'Status update delayed':'Status refreshes every 30 seconds'}</span><small>{updated?'Last checked '+formatTime(updated):'Waiting for status'}</small></div></section>
- <aside className="tracking-buses"><h2>Your transport network <span>{trips.length} trips</span></h2><label>Choose a trip<select value={selected} onChange={e=>setSelected(e.target.value)}>{trips.map(t=><option key={t.id} value={t.id}>{t.bus?.bus_number} · {t.travel_date} · {t.departure_time}</option>)}</select></label>{trip&&<article className="tracking-bus"><div className="section-top"><span className="card-icon"><Icon name="bus"/></span><Badge status={label}/></div><h3>{trip.bus?.bus_number}</h3><p>{trip.route?.route_name}</p><dl><dt>Departure</dt><dd>{trip.travel_date} · {trip.departure_time?.slice(0,5)}</dd><dt>Driver</dt><dd>{trip.driver?.name||'Not assigned'}</dd><dt>Seats</dt><dd>{trip.bus?.capacity??'Unavailable'}</dd></dl><h4>Route stops</h4><ol className="route-stops">{(stops.length?stops:[trip.route?.origin,trip.route?.destination].filter(Boolean)).map((stop,i)=><li key={i}>{stop}</li>)}</ol></article>}<div className="status-key">{['ACTIVE','STOPPED','COMPLETED','STALE'].map(s=><Badge key={s} status={s}/>)}</div></aside></div>}</>;
+  const routes=useResource(transportApi.routes);
+  const inbound=(routes.data||[]).filter(route=>route.direction==='inbound');
+  const routeKey=inbound.map(route=>route.pattern_id).join(',');
+  const patterns=useResource(async()=>{
+    const results=await Promise.allSettled(inbound.map(async route=>({route,pattern:await transportApi.pattern(route.pattern_id)})));
+    return {items:results.filter(result=>result.status==='fulfilled').map(result=>result.value),failed:results.filter(result=>result.status==='rejected').length};
+  },[routeKey]);
+  const [routeId,setRouteId]=useState('all'),[query,setQuery]=useState(''),[selected,setSelected]=useState(''),[road,setRoad]=useState(null),[roadError,setRoadError]=useState(''),[routing,setRouting]=useState(false);
+  const requestVersion=useRef(0);
+  useEffect(()=>()=>{requestVersion.current++;},[]);
+  const stops=useMemo(()=>{
+    const merged=new Map();
+    for(const {route,pattern} of patterns.data?.items||[]){
+      if(routeId!=='all'&&route.variant_id!==routeId)continue;
+      for(const stop of pattern.stops){
+        const campus=normalizeLocation(stop.label).startsWith('brac university');
+        const key=campus?'campus':String(stop.stop_id||normalizeLocation(stop.label));
+        if(!merged.has(key))merged.set(key,{...locateStop(stop),key,routeNames:[],routeCodes:[],verified:route.verified});
+        const item=merged.get(key);if(!item.routeCodes.includes(route.variant_code)){item.routeCodes.push(route.variant_code);item.routeNames.push(route.variant_name);}
+      }
+    }
+    return [...merged.values()];
+  },[patterns.data,routeId]);
+  const visible=stops.filter(stop=>normalizeLocation([stop.label,...stop.routeNames].join(' ')).includes(normalizeLocation(query)));
+  const chosen=stops.find(stop=>stop.key===selected);
+  const mapped=stops.filter(stop=>stop.location).length;
+  function select(key){requestVersion.current++;setSelected(key);setRoad(null);setRoadError('');setRouting(false);}
+  function changeRoute(value){setRouteId(value);setQuery('');select('');}
+  async function directions(){
+    if(!chosen?.location||routing)return;
+    const version=++requestVersion.current;setRouting(true);setRoadError('');
+    try{const result=await roadRoute(CAMPUS,chosen.location);if(version===requestVersion.current)setRoad(result);}
+    catch(error){if(version===requestVersion.current){setRoad(null);setRoadError(error.message||'Road directions are unavailable.');}}
+    finally{if(version===requestVersion.current)setRouting(false);}
+  }
+  const route=inbound.find(item=>item.variant_id===routeId);
+  return <><PageHeading title="Live Bus Tracking" eyebrow="CAMPUS & TRANSPORT MAP" action={<button type="button" onClick={()=>{routes.reload();patterns.reload();select('');}}><Icon name="history" size={17}/>Refresh locations</button>}>Explore BRAC University and every published route stoppage on a real map.</PageHeading>
+    <div className="geographic-status"><span className="geo-status-dot"/><div><strong>Real map · GPS not connected</strong><p>Stoppage locations and campus distances are available. Real-time bus locations require a GPS service.</p></div></div>
+    <div className="geo-controls"><label>Route<select aria-label="Map route" value={routeId} onChange={e=>changeRoute(e.target.value)}><option value="all">All university routes</option>{inbound.map(item=><option key={item.variant_id} value={item.variant_id}>{item.variant_code} · {item.variant_name}</option>)}</select></label><label>Find a stoppage<input type="search" value={query} placeholder="Search place or route" onChange={e=>setQuery(e.target.value)}/></label></div>
+    {(routes.loading||patterns.loading)&&<Loading>Loading university locations...</Loading>}
+    {routes.error&&<p role="alert" className="m2-error">{routes.error} <button type="button" onClick={routes.reload}>Retry routes</button></p>}
+    {patterns.error&&<p role="alert" className="m2-error">{patterns.error} <button type="button" onClick={patterns.reload}>Retry locations</button></p>}
+    {patterns.data?.failed>0&&<p role="alert" className="m2-error">Some route locations could not be loaded. Loaded routes remain available. <button type="button" onClick={patterns.reload}>Retry locations</button></p>}
+    <div className="geo-layout"><section className="tracking-map-card"><div className="map-toolbar"><div><span className="eyebrow">GEOGRAPHIC ROUTE MAP</span><h2>{route?.variant_name||'BRAC University transport network'}</h2></div><span className="geo-count">{mapped} / {stops.length} locations mapped</span></div>
+      <TransportMap stops={stops} selected={selected} onSelect={select} road={road} fitKey={routeId}/>
+      <div className="geo-map-legend"><span><i className="campus-key"/>BRAC University</span><span><i className="stop-key"/>Stoppage reference</span><span>No simulated bus movement</span></div>
+      <div className="geo-campus"><strong>{CAMPUS.name}</strong><span>{CAMPUS.address}</span><a href={CAMPUS.sourceUrl} target="_blank" rel="noreferrer">View campus on OpenStreetMap ↗</a></div>
+    </section>
+    <aside className="geo-details"><section className="geo-distance-card" aria-label="Distance from BRAC University"><span className="eyebrow">DISTANCE FROM CAMPUS</span><h2>{chosen?.label||'Choose a stoppage'}</h2>{chosen?<>
+      <div className="geo-distance-value">{formatDistance(chosen.straightDistanceKm)}</div><p>{chosen.location?.accuracy==='area'?'Approximate straight-line distance to mapped area reference':'Straight-line distance from BRAC University'}</p>
+      {!chosen.location?<p className="info-note">This location has no verified coordinate yet. Its pin and distance are unavailable.</p>:<>
+        <p className="geo-pin-note">{chosen.location.accuracy==='campus'?'Campus location':chosen.location.accuracy==='admin'?'Administrator-supplied coordinate':chosen.location.accuracy==='area'?'Area reference · exact boarding point needs confirmation':'Mapped landmark · boarding side needs confirmation'}</p>
+        {chosen.key!=='campus'&&<button type="button" className="primary-button" disabled={routing} onClick={directions}>{routing?'Finding road route…':'Show road distance & directions'}</button>}
+        {road&&<div className="geo-road-result"><strong>{formatDistance(road.distanceKm)}</strong><span>Estimated driving distance from BRAC University</span><small>Suggested road route; it may differ from the university bus route. No live traffic or arrival prediction.</small></div>}
+        {chosen.location.mappedName && <p className="geo-pin-note">Mapped reference: {chosen.location.mappedName}</p>}
+        {chosen.location.sourceUrl&&<a href={chosen.location.sourceUrl} target="_blank" rel="noreferrer">Location source ↗</a>}
+      </>}
+      {roadError&&<p role="alert" className="m2-error">{roadError} Straight-line distance is still shown.</p>}
+    </>:<p>Select a pin on the map or a stoppage below to see its distance and road directions.</p>}</section>
+    <section className="geo-stop-panel"><div className="section-top"><h2>Stoppages</h2><span>{visible.length} places</span></div><p className="muted">Distances below are straight-line estimates from the Merul Badda campus.</p><ul className="geo-stop-list">{visible.map(stop=><li key={stop.key}><button type="button" aria-pressed={selected===stop.key} onClick={()=>select(stop.key)}><span><strong>{stop.label}</strong><small>{stop.routeCodes.join(' · ')}</small><small>{!stop.location?'Coordinate pending':stop.location.accuracy==='area'?'Area reference · approximate distance':stop.location.accuracy==='campus'?'Merul Badda campus':'Mapped location'}</small></span><b>{formatDistance(stop.straightDistanceKm)}</b></button></li>)}</ul>{!routes.loading&&!patterns.loading&&!visible.length&&<EmptyState icon="map" title={query?'No matching stoppages':'No published route locations'}>{query?'Try another place or route name.':'Route stops will appear when the university schedule is published.'}</EmptyState>}</section></aside></div>
+  </>;
 }

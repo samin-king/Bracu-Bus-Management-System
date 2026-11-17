@@ -1,5 +1,6 @@
 import {transportApi} from '../services/transportApi.js';
 vi.mock('../services/transportApi.js',()=>({transportApi:{routes:vi.fn(),schedules:vi.fn(),pattern:vi.fn()}}));
+vi.mock('../components/TransportMap.jsx',()=>({default:()=>null}));
 import React,{useState} from 'react';
 import {beforeEach,it,expect,vi} from 'vitest';
 import {render,screen,fireEvent,waitFor} from '@testing-library/react';
@@ -54,9 +55,9 @@ it('star rating and feedback category use the existing feedback fields',async()=
  member4Api.submitFeedback.mockResolvedValue({});wrapper(<Feedback/>);fireEvent.click(screen.getByRole('radio',{name:'4 stars'}));fireEvent.change(screen.getByLabelText('Feedback category'),{target:{value:'Tracking'}});fireEvent.change(screen.getByLabelText('Comment (optional)'),{target:{value:'Helpful route view'}});fireEvent.click(screen.getByRole('button',{name:'Submit feedback'}));
  await waitFor(()=>expect(member4Api.submitFeedback).toHaveBeenCalledWith({target:'service',rating:4,comment:'[Tracking]\n\nHelpful route view'}));
 });
-it('tracking displays API route, driver and status while identifying simulated positions',async()=>{
- tripApi.list.mockResolvedValue([{id:1,status:'ACTIVE',bus:{bus_number:'BRACU-01',capacity:37},route:{route_name:'Campus route',origin:'City',destination:'Campus',stops:['City','Campus']},driver:{name:'Driver One'},travel_date:'2030-01-02',departure_time:'06:30:00'}]);wrapper(<LiveTracking/>);
- await screen.findByRole('heading',{name:'BRACU-01'});expect(screen.getByText('Driver One')).toBeInTheDocument();expect(screen.getByText(/Positions are illustrative/)).toBeInTheDocument();expect(screen.getAllByText('ACTIVE').length).toBeGreaterThan(0);
+it('tracking uses official schedule locations and never simulates bus movement',async()=>{
+ transportApi.routes.mockResolvedValue([{variant_id:'1',variant_code:'01-A',variant_name:'Abdullahpur-A',pattern_id:'1',direction:'inbound'}]);transportApi.pattern.mockResolvedValue({stops:[{id:'1',stop_id:'1',label:'BRAC University',latitude:null,longitude:null}]});wrapper(<LiveTracking/>);
+ await screen.findByText('Real map · GPS not connected');expect(await screen.findByRole('button',{name:/BRAC University.*0 m/})).toBeInTheDocument();expect(screen.queryByText(/Positions are illustrative/)).not.toBeInTheDocument();expect(tripApi.list).not.toHaveBeenCalled();
 });
 it('student transport navigation hides authority and driver-only screens',async()=>{
  wrapper(<Transport/>);expect(screen.queryByRole('button',{name:'Complaint Management'})).not.toBeInTheDocument();expect(screen.queryByRole('button',{name:'Drivers'})).not.toBeInTheDocument();expect(screen.queryByRole('button',{name:'Driver Dashboard'})).not.toBeInTheDocument();expect(screen.getByRole('button',{name:'Live Bus Tracking'})).toBeInTheDocument();

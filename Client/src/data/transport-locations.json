@@ -1,0 +1,858 @@
+{
+  "campus": {
+    "name": "BRAC University · Merul Badda",
+    "latitude": 23.7733146,
+    "longitude": 90.424371,
+    "sourceUrl": "https://www.openstreetmap.org/way/1239676644",
+    "address": "Kha 224 Pragati Sarani, Merul Badda, Dhaka 1212"
+  },
+  "locations": [
+    {
+      "labels": [
+        "Abdullahpur (Polwel Carnation Shopping Centre)"
+      ],
+      "latitude": 23.8787009,
+      "longitude": 90.4017549,
+      "accuracy": "area",
+      "mappedName": "Polwel Super Market",
+      "sourceUrl": "https://www.openstreetmap.org/way/526426984"
+    },
+    {
+      "labels": [
+        "House Building (Labaid Diagnostic)"
+      ],
+      "latitude": 23.8742893,
+      "longitude": 90.4004176,
+      "accuracy": "area",
+      "mappedName": "Uttara House Building Bus stop",
+      "sourceUrl": "https://www.openstreetmap.org/node/12086925189"
+    },
+    {
+      "labels": [
+        "Azampur (In front of Uttara East Police Station)"
+      ],
+      "latitude": 23.8682472,
+      "longitude": 90.4003963,
+      "accuracy": "landmark",
+      "mappedName": "Azampur Footover Bridge",
+      "sourceUrl": "https://www.openstreetmap.org/way/1390963672"
+    },
+    {
+      "labels": [
+        "Jasimuddin (Popular Diagnostic Centre)"
+      ],
+      "latitude": 23.8608721,
+      "longitude": 90.4004138,
+      "accuracy": "area",
+      "mappedName": "Jashimuddin Bus Stopage, Uttara",
+      "sourceUrl": "https://www.openstreetmap.org/node/4737734596"
+    },
+    {
+      "labels": [
+        "Airport (In front of passenger shed situated 50 yards back)"
+      ],
+      "latitude": 23.8518203,
+      "longitude": 90.4082316,
+      "accuracy": "area",
+      "mappedName": "Dhaka Airport Railway Station",
+      "sourceUrl": "https://www.openstreetmap.org/way/32561594"
+    },
+    {
+      "labels": [
+        "Kawla (near foot over-bridge)"
+      ],
+      "latitude": 23.8463381,
+      "longitude": 90.4122209,
+      "accuracy": "area",
+      "mappedName": "Kawla Rail Gate Bus stop",
+      "sourceUrl": "https://www.openstreetmap.org/node/12082231857"
+    },
+    {
+      "labels": [
+        "Khilket (first foot over-bridge)"
+      ],
+      "latitude": 23.8296768,
+      "longitude": 90.4196545,
+      "accuracy": "landmark",
+      "mappedName": "khilkhet Footover Brg",
+      "sourceUrl": "https://www.openstreetmap.org/way/1147742713"
+    },
+    {
+      "labels": [
+        "Biswa Road (near foot over-bridge)"
+      ],
+      "latitude": 23.8212083,
+      "longitude": 90.4195365,
+      "accuracy": "landmark",
+      "mappedName": "Kuril Bishwa Road Bus Stop",
+      "sourceUrl": "https://www.openstreetmap.org/node/5434458921"
+    },
+    {
+      "labels": [
+        "Jashimuddin (Opposite to RAK Shopping Complex, Uttara Sector #01, Road #14)"
+      ],
+      "latitude": 23.8608721,
+      "longitude": 90.4004138,
+      "accuracy": "area",
+      "mappedName": "Jashimuddin Bus Stopage, Uttara",
+      "sourceUrl": "https://www.openstreetmap.org/node/4737734596"
+    },
+    {
+      "labels": [
+        "Korotoa Courier Point (Opposite to Korotoa Courier Service, Uttara Sector #03, Road #18)"
+      ],
+      "latitude": 23.8641802,
+      "longitude": 90.3961525,
+      "accuracy": "area",
+      "mappedName": "Sector 3",
+      "sourceUrl": "https://www.openstreetmap.org/node/391707225"
+    },
+    {
+      "labels": [
+        "Shahid Mugdho Corner (In front of Shahid Mugdho Corner (Robindro Sorobor))"
+      ],
+      "latitude": 23.8676474,
+      "longitude": 90.3970834,
+      "accuracy": "area",
+      "mappedName": "Rabindra Sarani",
+      "sourceUrl": "https://www.openstreetmap.org/way/24576374"
+    },
+    {
+      "labels": [
+        "Lake Drive Road – Uttara Model Town, Opposite to Brac Bank, Sector #07"
+      ],
+      "latitude": 23.8699595,
+      "longitude": 90.3973375,
+      "accuracy": "area",
+      "mappedName": "Sector 7",
+      "sourceUrl": "https://www.openstreetmap.org/node/391706301"
+    },
+    {
+      "labels": [
+        "Zam Zam Tower (In front of Zam Zam Tower, Sector #13, Uttara)"
+      ],
+      "latitude": 23.8740566,
+      "longitude": 90.3905325,
+      "accuracy": "landmark",
+      "mappedName": "Zam Zam Tower",
+      "sourceUrl": "https://www.openstreetmap.org/node/8860021394"
+    },
+    {
+      "labels": [
+        "Tagore University Point (In front of Tagore University of Creative Arts, Sector #12)"
+      ],
+      "latitude": 23.8741086,
+      "longitude": 90.3836997,
+      "accuracy": "area",
+      "mappedName": "Rabindra Srijonkala University",
+      "sourceUrl": "https://www.openstreetmap.org/node/9526281076"
+    },
+    {
+      "labels": [
+        "Khalpar Mor – In front of Police Box"
+      ],
+      "latitude": 23.8741086,
+      "longitude": 90.3836997,
+      "accuracy": "area",
+      "mappedName": "Rabindra Srijonkala University",
+      "sourceUrl": "https://www.openstreetmap.org/node/9526281076"
+    },
+    {
+      "labels": [
+        "Diabari Gol Chattar (In front of Fresh Ceramics, Uttara)"
+      ],
+      "latitude": 23.8738492,
+      "longitude": 90.3674197,
+      "accuracy": "area",
+      "mappedName": "Diabari",
+      "sourceUrl": "https://www.openstreetmap.org/node/9065660512"
+    },
+    {
+      "labels": [
+        "Uttara Centre (MRT Station) – Under Metro Rail Station"
+      ],
+      "latitude": 23.8597545,
+      "longitude": 90.3652035,
+      "accuracy": "landmark",
+      "mappedName": "Uttara Center Metro Station",
+      "sourceUrl": "https://www.openstreetmap.org/way/1014126002"
+    },
+    {
+      "labels": [
+        "Mirpur Ceramics (near CNG filling station)",
+        "Mirpur Ceramics (near CNG Filling Station)"
+      ],
+      "latitude": 23.8300391,
+      "longitude": 90.3773756,
+      "accuracy": "area",
+      "mappedName": "Pallabi Police Station",
+      "sourceUrl": "https://www.openstreetmap.org/way/962988877"
+    },
+    {
+      "labels": [
+        "Mirpur DOHS Gate (near Trust bus stop)",
+        "Mirpur DOHS Gate (near Trust Bus Stop)"
+      ],
+      "latitude": 23.8264898,
+      "longitude": 90.3771127,
+      "accuracy": "area",
+      "mappedName": "Mirpur DOHS Link",
+      "sourceUrl": "https://www.openstreetmap.org/way/421954029"
+    },
+    {
+      "labels": [
+        "Pallabi Thana (Shagufta mour)"
+      ],
+      "latitude": 23.8300391,
+      "longitude": 90.3773756,
+      "accuracy": "landmark",
+      "mappedName": "Pallabi Police Station",
+      "sourceUrl": "https://www.openstreetmap.org/way/962988877"
+    },
+    {
+      "labels": [
+        "Kalshi Bus Stand"
+      ],
+      "latitude": 23.8232324,
+      "longitude": 90.3784304,
+      "accuracy": "area",
+      "mappedName": "ইসিবি কালশী বাস কাউন্টার kalshi bus counter",
+      "sourceUrl": "https://www.openstreetmap.org/node/12200876002"
+    },
+    {
+      "labels": [
+        "ECB Chattar"
+      ],
+      "latitude": 23.8225769,
+      "longitude": 90.3934333,
+      "accuracy": "landmark",
+      "mappedName": "ECB Chattar",
+      "sourceUrl": "https://www.openstreetmap.org/way/534740164"
+    },
+    {
+      "labels": [
+        "Mirpur Bangla College"
+      ],
+      "latitude": 23.7849521,
+      "longitude": 90.3527616,
+      "accuracy": "landmark",
+      "mappedName": "Government Bangla College",
+      "sourceUrl": "https://www.openstreetmap.org/relation/5214604"
+    },
+    {
+      "labels": [
+        "Dhaka Laboratory School and College (In front of Staff Quarter)"
+      ],
+      "latitude": 23.7849521,
+      "longitude": 90.3527616,
+      "accuracy": "area",
+      "mappedName": "Government Bangla College",
+      "sourceUrl": "https://www.openstreetmap.org/relation/5214604"
+    },
+    {
+      "labels": [
+        "Sony Cinema Hall (near KFC)"
+      ],
+      "latitude": 23.8004874,
+      "longitude": 90.3553934,
+      "accuracy": "landmark",
+      "mappedName": "Sony Cinema Hall",
+      "sourceUrl": "https://www.openstreetmap.org/node/4937463523"
+    },
+    {
+      "labels": [
+        "Mirpur College Gate (Mirpur 2)"
+      ],
+      "latitude": 23.8036578,
+      "longitude": 90.3614662,
+      "accuracy": "landmark",
+      "mappedName": "Mirpur College Bus stop",
+      "sourceUrl": "https://www.openstreetmap.org/node/13260941569"
+    },
+    {
+      "labels": [
+        "Swimming Federation Gate (Mirpur stadium)"
+      ],
+      "latitude": 23.8070219,
+      "longitude": 90.3654666,
+      "accuracy": "landmark",
+      "mappedName": "Syed Nazrul Islam National Swimming Complex",
+      "sourceUrl": "https://www.openstreetmap.org/way/24787765"
+    },
+    {
+      "labels": [
+        "Popular Diagnostic Centre (Mirpur 6)"
+      ],
+      "latitude": 23.8095357,
+      "longitude": 90.3681201,
+      "accuracy": "landmark",
+      "mappedName": "Popular Diagnostic Center Ltd Unit-2",
+      "sourceUrl": "https://www.openstreetmap.org/node/4579879715"
+    },
+    {
+      "labels": [
+        "Pallabi Post Office (near Purobi Cinema Hall)"
+      ],
+      "latitude": 23.8195201,
+      "longitude": 90.3645776,
+      "accuracy": "area",
+      "mappedName": "Purabi Cinema Hall",
+      "sourceUrl": "https://www.openstreetmap.org/way/358796057"
+    },
+    {
+      "labels": [
+        "Mirpur 11.5 (Banalata Sweets)"
+      ],
+      "latitude": 23.8195201,
+      "longitude": 90.3645776,
+      "accuracy": "area",
+      "mappedName": "Purabi Cinema Hall",
+      "sourceUrl": "https://www.openstreetmap.org/way/358796057"
+    },
+    {
+      "labels": [
+        "Mirpur 14 Bus Stand (opposite to Marks Medical College Hospital)"
+      ],
+      "latitude": 23.7989144,
+      "longitude": 90.3867286,
+      "accuracy": "landmark",
+      "mappedName": "MARKS DENTAL COLLEGE AND HOSPITAL",
+      "sourceUrl": "https://www.openstreetmap.org/node/2877319780"
+    },
+    {
+      "labels": [
+        "In front of NAM Garden Officers Quarter, Mirpur 13 (near BRTA 2nd Gate)"
+      ],
+      "latitude": 23.8041263,
+      "longitude": 90.3767561,
+      "accuracy": "landmark",
+      "mappedName": "Nam Garden Officer's Quarters",
+      "sourceUrl": "https://www.openstreetmap.org/relation/6610756"
+    },
+    {
+      "labels": [
+        "Opposite to Water Tank (Mirpur 10)"
+      ],
+      "latitude": 23.8085679,
+      "longitude": 90.3731492,
+      "accuracy": "area",
+      "mappedName": "Water Tank Road, Section-10",
+      "sourceUrl": "https://www.openstreetmap.org/way/33777057"
+    },
+    {
+      "labels": [
+        "Al Helal Specialized Hospital (Mirpur 10)"
+      ],
+      "latitude": 23.8027205,
+      "longitude": 90.3708121,
+      "accuracy": "landmark",
+      "mappedName": "Al-Helal Hospital",
+      "sourceUrl": "https://www.openstreetmap.org/way/369449711"
+    },
+    {
+      "labels": [
+        "In front of BRAC Healthcare, Kazipara"
+      ],
+      "latitude": 23.7992224,
+      "longitude": 90.3719446,
+      "accuracy": "area",
+      "mappedName": "Kazipara Metro Station",
+      "sourceUrl": "https://www.openstreetmap.org/way/1125153760"
+    },
+    {
+      "labels": [
+        "Shewrapara (near Jamuna Plaza and Metro Rail Station)"
+      ],
+      "latitude": 23.7909484,
+      "longitude": 90.3754461,
+      "accuracy": "landmark",
+      "mappedName": "Shewrapara Metro Station",
+      "sourceUrl": "https://www.openstreetmap.org/way/1125154347"
+    },
+    {
+      "labels": [
+        "Taltola Bus Stand (opposite to Glory School & College)"
+      ],
+      "latitude": 23.7837151,
+      "longitude": 90.3750935,
+      "accuracy": "area",
+      "mappedName": "Taltola",
+      "sourceUrl": "https://www.openstreetmap.org/node/5054370483"
+    },
+    {
+      "labels": [
+        "Jigatola Bus Stand (in front of Japan-Bangladesh Friendship Hospital)"
+      ],
+      "latitude": 23.7394954,
+      "longitude": 90.3750642,
+      "accuracy": "landmark",
+      "mappedName": "Japan Bangladesh Friendship Hospital",
+      "sourceUrl": "https://www.openstreetmap.org/way/262511010"
+    },
+    {
+      "labels": [
+        "Keari Plaza, Dhanmondi 15 Bus Stand"
+      ],
+      "latitude": 23.7439367,
+      "longitude": 90.3725689,
+      "accuracy": "landmark",
+      "mappedName": "Keari Plaza",
+      "sourceUrl": "https://www.openstreetmap.org/way/262506692"
+    },
+    {
+      "labels": [
+        "Shankar Bus Stand"
+      ],
+      "latitude": 23.749615,
+      "longitude": 90.3660979,
+      "accuracy": "area",
+      "mappedName": "Shankar",
+      "sourceUrl": "https://www.openstreetmap.org/node/9331599933"
+    },
+    {
+      "labels": [
+        "Meena Bazar (Dhanmondi 27)"
+      ],
+      "latitude": 23.7560325,
+      "longitude": 90.3757211,
+      "accuracy": "area",
+      "mappedName": "Dhanmondi 27 Bus stop",
+      "sourceUrl": "https://www.openstreetmap.org/node/12009447484"
+    },
+    {
+      "labels": [
+        "In front of Lalmatia Mother Care Hospital"
+      ],
+      "latitude": 23.756797,
+      "longitude": 90.3744592,
+      "accuracy": "landmark",
+      "mappedName": "Mother Care Hospital",
+      "sourceUrl": "https://www.openstreetmap.org/node/4531545620"
+    },
+    {
+      "labels": [
+        "Azimpur Etimkhana Mour"
+      ],
+      "latitude": 23.7240588,
+      "longitude": 90.3869302,
+      "accuracy": "area",
+      "mappedName": "Azimpur Orphanage Market",
+      "sourceUrl": "https://www.openstreetmap.org/way/1533068760"
+    },
+    {
+      "labels": [
+        "Azimpur Chowrasta"
+      ],
+      "latitude": 23.7252946,
+      "longitude": 90.3834641,
+      "accuracy": "area",
+      "mappedName": "Azimpur",
+      "sourceUrl": "https://www.openstreetmap.org/node/9031543667"
+    },
+    {
+      "labels": [
+        "New Market (gate no 2, Janata Bank)"
+      ],
+      "latitude": 23.7342234,
+      "longitude": 90.3844723,
+      "accuracy": "landmark",
+      "mappedName": "New Market Bus stop, Mirpur Rd, Dhaka",
+      "sourceUrl": "https://www.openstreetmap.org/node/11821919116"
+    },
+    {
+      "labels": [
+        "Happy Arcade Shopping Mall (beside City College)"
+      ],
+      "latitude": 23.7402898,
+      "longitude": 90.3827395,
+      "accuracy": "landmark",
+      "mappedName": "Happy Arcade Shopping Mall",
+      "sourceUrl": "https://www.openstreetmap.org/way/161571246"
+    },
+    {
+      "labels": [
+        "Dhanmondi, Road No 7 (ARA Centre Shopping Mall)"
+      ],
+      "latitude": 23.741516,
+      "longitude": 90.3825691,
+      "accuracy": "area",
+      "mappedName": "Premium Sweets",
+      "sourceUrl": "https://www.openstreetmap.org/node/14286743980"
+    },
+    {
+      "labels": [
+        "Kalabagan Krira Chokro (near foot over-bridge)"
+      ],
+      "latitude": 23.7487244,
+      "longitude": 90.3791976,
+      "accuracy": "area",
+      "mappedName": "Kalabagan Cricket Ground",
+      "sourceUrl": "https://www.openstreetmap.org/way/289146140"
+    },
+    {
+      "labels": [
+        "Sobhanbag (near foot over-bridge)"
+      ],
+      "latitude": 23.7543493,
+      "longitude": 90.3767284,
+      "accuracy": "landmark",
+      "mappedName": "Sobhanbag Bus stop",
+      "sourceUrl": "https://www.openstreetmap.org/node/12009415845"
+    },
+    {
+      "labels": [
+        "West End of Manik Mia Avenue (opposite Aarong)",
+        "West end of Manik Mia Avenue (opposite to Aarong)"
+      ],
+      "latitude": 23.7584021,
+      "longitude": 90.3737699,
+      "accuracy": "landmark",
+      "mappedName": "Aarong, Dhanmondi Branch 2 (Lalmatia)",
+      "sourceUrl": "https://www.openstreetmap.org/node/2327818076"
+    },
+    {
+      "labels": [
+        "Khejur Bagan Mour (Manik Mia Avenue)"
+      ],
+      "latitude": 23.7601134,
+      "longitude": 90.3839271,
+      "accuracy": "area",
+      "mappedName": "Khejur Bagan Jame Mosque",
+      "sourceUrl": "https://www.openstreetmap.org/node/3448078013"
+    },
+    {
+      "labels": [
+        "Doyaganj Mour (near mandir)"
+      ],
+      "latitude": 23.7104417,
+      "longitude": 90.4246393,
+      "accuracy": "area",
+      "mappedName": "Dayaganj",
+      "sourceUrl": "https://www.openstreetmap.org/node/396686487"
+    },
+    {
+      "labels": [
+        "Baldha Garden"
+      ],
+      "latitude": 23.7169205,
+      "longitude": 90.4193905,
+      "accuracy": "landmark",
+      "mappedName": "Baldha Garden বলধা গার্ডেন",
+      "sourceUrl": "https://www.openstreetmap.org/way/34597180"
+    },
+    {
+      "labels": [
+        "Ittefaq Mour"
+      ],
+      "latitude": 23.7216067,
+      "longitude": 90.4203828,
+      "accuracy": "landmark",
+      "mappedName": "Ittefaq Circle",
+      "sourceUrl": "https://www.openstreetmap.org/node/4272331791"
+    },
+    {
+      "labels": [
+        "Motijheel (foot over-bridge)"
+      ],
+      "latitude": 23.7272598,
+      "longitude": 90.4211957,
+      "accuracy": "area",
+      "mappedName": "Motijheel",
+      "sourceUrl": "https://www.openstreetmap.org/node/8953203672"
+    },
+    {
+      "labels": [
+        "Arambag (near Janata Bank)"
+      ],
+      "latitude": 23.7320132,
+      "longitude": 90.4208222,
+      "accuracy": "landmark",
+      "mappedName": "Arambagh Bus stop",
+      "sourceUrl": "https://www.openstreetmap.org/node/12033090027"
+    },
+    {
+      "labels": [
+        "Fakirapool Mour (Apex showroom)"
+      ],
+      "latitude": 23.7331201,
+      "longitude": 90.4172013,
+      "accuracy": "area",
+      "mappedName": "Fakirapool",
+      "sourceUrl": "https://www.openstreetmap.org/node/4907143421"
+    },
+    {
+      "labels": [
+        "Purana Paltan (Hatil showroom)"
+      ],
+      "latitude": 23.735623,
+      "longitude": 90.4117156,
+      "accuracy": "area",
+      "mappedName": "Purana Paltan Line",
+      "sourceUrl": "https://www.openstreetmap.org/way/529723831"
+    },
+    {
+      "labels": [
+        "Kakrail Mour (near Eastern Bank)"
+      ],
+      "latitude": 23.741821,
+      "longitude": 90.4121213,
+      "accuracy": "area",
+      "mappedName": "Kakrail Road",
+      "sourceUrl": "https://www.openstreetmap.org/way/1203505194"
+    },
+    {
+      "labels": [
+        "Shantinagar Mour (One Bank)"
+      ],
+      "latitude": 23.7385358,
+      "longitude": 90.4139156,
+      "accuracy": "area",
+      "mappedName": "Shantinagar",
+      "sourceUrl": "https://www.openstreetmap.org/node/9024389533"
+    },
+    {
+      "labels": [
+        "Moghbazar T&T Office"
+      ],
+      "latitude": 23.7536296,
+      "longitude": 90.4109008,
+      "accuracy": "area",
+      "mappedName": "Moghbazar BTCL (T&T) Colony Kallyan Samiti",
+      "sourceUrl": "https://www.openstreetmap.org/way/405600532"
+    },
+    {
+      "labels": [
+        "Moghbazar Mour (NCC Bank)"
+      ],
+      "latitude": 23.7510428,
+      "longitude": 90.4064602,
+      "accuracy": "area",
+      "mappedName": "Mogbazar",
+      "sourceUrl": "https://www.openstreetmap.org/node/9024489331"
+    },
+    {
+      "labels": [
+        "Shiya Masjid (near Top Ten shop)"
+      ],
+      "latitude": 23.7620647,
+      "longitude": 90.3591241,
+      "accuracy": "landmark",
+      "mappedName": "Shia Jame Masjid",
+      "sourceUrl": "https://www.openstreetmap.org/way/374712754"
+    },
+    {
+      "labels": [
+        "Opposite to Suchona Community Center"
+      ],
+      "latitude": 23.7672278,
+      "longitude": 90.358901,
+      "accuracy": "landmark",
+      "mappedName": "Suchona Community Center",
+      "sourceUrl": "https://www.openstreetmap.org/way/440170070"
+    },
+    {
+      "labels": [
+        "Shampa Market"
+      ],
+      "latitude": 23.7727207,
+      "longitude": 90.360331,
+      "accuracy": "landmark",
+      "mappedName": "Shompa Super Market",
+      "sourceUrl": "https://www.openstreetmap.org/way/369418782"
+    },
+    {
+      "labels": [
+        "Shyamoli (Bata mour)"
+      ],
+      "latitude": 23.7743951,
+      "longitude": 90.3654285,
+      "accuracy": "area",
+      "mappedName": "Shyamoli",
+      "sourceUrl": "https://www.openstreetmap.org/node/4594967589"
+    },
+    {
+      "labels": [
+        "Opposite to Shyamoli Cinema Hall"
+      ],
+      "latitude": 23.7746124,
+      "longitude": 90.3654171,
+      "accuracy": "landmark",
+      "mappedName": "Shyamoli Cinema Hall",
+      "sourceUrl": "https://www.openstreetmap.org/node/4363245144"
+    },
+    {
+      "labels": [
+        "Agargaon Radio Office"
+      ],
+      "latitude": 23.7750736,
+      "longitude": 90.3722873,
+      "accuracy": "area",
+      "mappedName": "Bangladesh Betar Mosque",
+      "sourceUrl": "https://www.openstreetmap.org/way/305106755"
+    },
+    {
+      "labels": [
+        "Opposite to Agargaon flower shops"
+      ],
+      "latitude": 23.781597,
+      "longitude": 90.3762317,
+      "accuracy": "area",
+      "mappedName": "Agargaon",
+      "sourceUrl": "https://www.openstreetmap.org/node/8968735495"
+    },
+    {
+      "labels": [
+        "In front of Bata Showroom (opposite to Japan Garden City's main gate)"
+      ],
+      "latitude": 23.764705,
+      "longitude": 90.357781,
+      "accuracy": "area",
+      "mappedName": "Japan Garden City",
+      "sourceUrl": "https://www.openstreetmap.org/way/560921321"
+    },
+    {
+      "labels": [
+        "In front of Baitus Sujud Jame Mosque (Near Mohammadpur Bus Stand/Nurjahan Road)"
+      ],
+      "latitude": 23.7579121,
+      "longitude": 90.3625465,
+      "accuracy": "landmark",
+      "mappedName": "Baitus Sujud Jame Moshjid",
+      "sourceUrl": "https://www.openstreetmap.org/way/296977264"
+    },
+    {
+      "labels": [
+        "Town Hall Market (in front of Bikrampur Mistanna Bhandar)"
+      ],
+      "latitude": 23.7596689,
+      "longitude": 90.3662806,
+      "accuracy": "landmark",
+      "mappedName": "Mohammadpur Town Hall Bus stop",
+      "sourceUrl": "https://www.openstreetmap.org/node/12014830074"
+    },
+    {
+      "labels": [
+        "In front of Square Hospital (Panthapath)"
+      ],
+      "latitude": 23.7530278,
+      "longitude": 90.3817096,
+      "accuracy": "landmark",
+      "mappedName": "Square Hospital",
+      "sourceUrl": "https://www.openstreetmap.org/node/12056943177"
+    },
+    {
+      "labels": [
+        "Water Bhaban (Near Panthapath Mour)"
+      ],
+      "latitude": 23.7505222,
+      "longitude": 90.3884445,
+      "accuracy": "area",
+      "mappedName": "Dutch-Bangla Bank Limited Fast Track and ATM, KK Bhaban, Panthapath, Dhaka",
+      "sourceUrl": "https://www.openstreetmap.org/node/11834742027"
+    },
+    {
+      "labels": [
+        "Narayanganj Central Shahid Minar (Chashara)"
+      ],
+      "latitude": 23.6251284,
+      "longitude": 90.4984039,
+      "accuracy": "area",
+      "mappedName": "Chashara Bus Stand",
+      "sourceUrl": "https://www.openstreetmap.org/node/5187631138"
+    },
+    {
+      "labels": [
+        "Himaloy Chinese & Community Centre (opposite to Narayanganj Zila Parishad)"
+      ],
+      "latitude": 23.6335413,
+      "longitude": 90.4952916,
+      "accuracy": "landmark",
+      "mappedName": "Himaloy Chinese and Community Center হিমালয় চাইনিজ এন্ড কমনিউটি সেন্টার",
+      "sourceUrl": "https://www.openstreetmap.org/way/534817417"
+    },
+    {
+      "labels": [
+        "Shibu Market (in front of Dutch Bangla Bank)"
+      ],
+      "latitude": 23.6441126,
+      "longitude": 90.4934847,
+      "accuracy": "area",
+      "mappedName": "Ranima Plazza,Shibu Market",
+      "sourceUrl": "https://www.openstreetmap.org/way/511394610"
+    },
+    {
+      "labels": [
+        "Jalkuri Bus Stand, Fatullah (in front of First Security Islami Bank)"
+      ],
+      "latitude": 23.6637211,
+      "longitude": 90.4869259,
+      "accuracy": "landmark",
+      "mappedName": "Jalkuri Bus Stop জালকুড়ি বাস স্টপ",
+      "sourceUrl": "https://www.openstreetmap.org/node/5185361290"
+    },
+    {
+      "labels": [
+        "Signboard (near Islamia Eye Hospital)"
+      ],
+      "latitude": 23.6935827,
+      "longitude": 90.4804406,
+      "accuracy": "landmark",
+      "mappedName": "Signboard Bus Stop",
+      "sourceUrl": "https://www.openstreetmap.org/node/6119642723"
+    },
+    {
+      "labels": [
+        "Sanarpar Bus Stand, Siddhirganj"
+      ],
+      "latitude": 23.6949106,
+      "longitude": 90.4902493,
+      "accuracy": "landmark",
+      "mappedName": "sanarpar bus stop",
+      "sourceUrl": "https://www.openstreetmap.org/node/3518348924"
+    },
+    {
+      "labels": [
+        "In front of Demra Ideal College"
+      ],
+      "latitude": 23.7197292,
+      "longitude": 90.4905289,
+      "accuracy": "area",
+      "mappedName": "Demra staff quarter",
+      "sourceUrl": "https://www.openstreetmap.org/node/4832053622"
+    },
+    {
+      "labels": [
+        "Ebenezer International School, Bashundhara R/A"
+      ],
+      "latitude": 23.8189265,
+      "longitude": 90.4368229,
+      "accuracy": "area",
+      "mappedName": "Bashundhara Residential Area",
+      "sourceUrl": "https://www.openstreetmap.org/node/264889126"
+    },
+    {
+      "labels": [
+        "Block-F, Road No: 08, Bashundhara R/A (opposite to IFIC Bank)"
+      ],
+      "latitude": 23.820283,
+      "longitude": 90.4335844,
+      "accuracy": "area",
+      "mappedName": "Block F",
+      "sourceUrl": "https://www.openstreetmap.org/node/11052926791"
+    },
+    {
+      "labels": [
+        "In front of Aga Khan Academy, Bashundhara R/A"
+      ],
+      "latitude": 23.8242373,
+      "longitude": 90.4278996,
+      "accuracy": "landmark",
+      "mappedName": "Aga Khan Academy Dhaka",
+      "sourceUrl": "https://www.openstreetmap.org/way/1310438281"
+    }
+  ],
+  "version": "2026-11-17",
+  "license": "OpenStreetMap contributors · ODbL 1.0",
+  "licenseUrl": "https://www.openstreetmap.org/copyright",
+  "note": "Landmarks and area references, not surveyed boarding pins. Area-based distance refers to the named reference, not an exact pickup point."
+}
