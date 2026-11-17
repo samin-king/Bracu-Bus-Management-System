@@ -1,3 +1,5 @@
+import {transportApi} from '../services/transportApi.js';
+vi.mock('../services/transportApi.js',()=>({transportApi:{routes:vi.fn(),schedules:vi.fn(),pattern:vi.fn()}}));
 import React from 'react';
 import {beforeEach,afterEach,it,expect,vi} from 'vitest';
 import {act,fireEvent,render,screen,waitFor} from '@testing-library/react';
@@ -11,7 +13,7 @@ vi.mock('../services/authApi.js',()=>({authApi:{me:vi.fn(),logout:vi.fn()}}));
 vi.mock('../services/member2Api.js',()=>({member2Api:{trips:vi.fn(),seats:vi.fn(),book:vi.fn()}}));
 const student={id:1,name:'Student',role:'student'};
 const trip={id:'1',bus:'Bus 28',route:'Campus route',capacity:28,departureTime:'06:30',bookingOpen:false};
-beforeEach(()=>{vi.resetAllMocks();authApi.me.mockResolvedValue(student);api.trips.mockResolvedValue([trip]);api.seats.mockResolvedValue({trip,bookingOpen:false,genderKnown:true,profileGender:'male',standingEligible:true,standingAvailable:2,standingCapacity:2,seats:Array.from({length:28},(_,i)=>({number:i+1,state:i<18?'Reserved':'Available',reserved:i<18,selectable:i>=18}))});});
+beforeEach(()=>{vi.resetAllMocks();transportApi.routes.mockResolvedValue([]);authApi.me.mockResolvedValue(student);api.trips.mockResolvedValue([trip]);api.seats.mockResolvedValue({trip,bookingOpen:false,genderKnown:true,profileGender:'male',standingEligible:true,standingAvailable:2,standingCapacity:2,seats:Array.from({length:28},(_,i)=>({number:i+1,state:i<18?'Reserved':'Available',reserved:i<18,selectable:i>=18}))});});
 afterEach(()=>vi.restoreAllMocks());
 function view(){render(<MemoryRouter><AuthProvider><Routes><Route path="/" element={<ProtectedRoute><BookBus/></ProtectedRoute>}/><Route path="/login" element={<p>Sign in required</p>}/></Routes></AuthProvider></MemoryRouter>);}
 async function choose(){view();await screen.findByLabelText('Travel date');fireEvent.change(screen.getByLabelText('Travel date'),{target:{value:'2030-01-02'}});fireEvent.click(await screen.findByRole('button',{name:/Bus 28/}));fireEvent.click(await screen.findByRole('button',{name:'Seat 19 Available'}));await screen.findByRole('button',{name:'Seat 19 Selected'});}

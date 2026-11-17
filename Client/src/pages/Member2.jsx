@@ -3,7 +3,11 @@ import { Link, NavLink, Outlet, useParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 import { member2Api as api } from '../services/member2Api.js';
 import './member2.css';
-import SeatMap, {seatLabel} from '../components/SeatMap.jsx';
+import {BookingSummary} from '../components/BookingSummary.jsx';
+import ScheduledBooking from '../components/ScheduledBooking.jsx';
+import {transportApi} from '../services/transportApi.js';
+export {BookingSummary} from '../components/BookingSummary.jsx';
+import SeatMap from '../components/SeatMap.jsx';
 import {Icon, Badge, PageHeading, EmptyState, Loading, useResource} from '../components/Ui.jsx';
 import {member4Api} from '../services/member4Api.js';
 import {complaintOptions, legacyCategories, complaintDescription} from '../services/complaintOptions.js';
@@ -51,11 +55,12 @@ export function StudentDashboard() {
     <section><div className="section-top"><h2>Latest updates</h2><Link to="/notifications">View all</Link></div>{notices.loading?<Loading/>:notices.error?<p role="alert">{notices.error}</p>:notices.data?.length?notices.data.slice(0,3).map(n=><div className="recent-item" key={n.id}><span className="card-icon"><Icon name="bell"/></span><div><strong>{n.title}</strong><small>{n.message}</small></div>{!n.read_at&&<span className="unread-dot" aria-label="Unread"/>}</div>):<EmptyState icon="bell" title="You're all caught up">Your transport notifications will appear here.</EmptyState>}</section></div></>;
 }
 
-export function BookingSummary({ booking }) {
-  const trip = booking.trip_snapshot;
-  return <dl><dt>Booking ID</dt><dd>{booking.id}</dd><dt>Trip</dt><dd>{booking.trip_id}</dd><dt>Bus</dt><dd>{trip.bus}</dd><dt>Route</dt><dd>{trip.route}</dd><dt>Travel date</dt><dd>{booking.travel_date}</dd><dt>Trip time</dt><dd>{trip.departureTime} (Asia/Dhaka)</dd><dt>Seat</dt><dd>{booking.standing ? 'Standing' : `${seatLabel(booking.seat_number)} (Seat ${booking.seat_number})`}</dd><dt>Status</dt><dd><Badge status={booking.status}/></dd>{booking.created_at && <><dt>Created time</dt><dd>{stamp(booking.created_at)}</dd></>}</dl>;
-}
 export function BookBus() {
+  const routes = useLoad(transportApi.routes);
+  if (routes.loading || routes.error) return <><PageHeading title="Book a Seat">Choose your route, stoppage and trip from the university transport schedule.</PageHeading><LoadState state={routes}/></>;
+  return routes.data.length ? <ScheduledBooking routes={routes.data}/> : <LegacyBookBus/>;
+}
+function LegacyBookBus() {
   const [date, setDate] = useState(today), [tripId, setTripId] = useState(''), [seat, setSeat] = useState(null);
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), [confirmation, setConfirmation] = useState(null);
   const trips = useLoad(() => api.trips(date), [date]);

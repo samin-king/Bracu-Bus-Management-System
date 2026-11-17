@@ -12,9 +12,14 @@ async function request(path, options = {}) {
       booking_window_closed: 'Booking is closed for this trip.',
       daily_booking_limit: 'You already have four confirmed trips on this date.',
       cancellation_closed: 'This trip has departed and can no longer be cancelled.',
+      invalid_stop_selection: 'Choose a valid pickup and destination for this trip.',
+      trip_not_found: 'This trip is no longer available. Refresh the schedule.',
+      standing_full: 'Standing tickets are now full. Choose another trip.',
       already_cancelled: 'This booking has already been cancelled.'
     };
-    throw new Error(messages[data.error] || `Request failed: ${String(data.error || response.status).replaceAll('_', ' ')}.`);
+    const error = new Error(messages[data.error] || `Request failed: ${String(data.error || response.status).replaceAll('_', ' ')}.`);
+    error.code = data.error || String(response.status);
+    throw error;
   }
   return data;
 }
